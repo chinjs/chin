@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+- '8'
+after_success:
+- yarn coverage
+deploy:
+  provider: npm
+  email: toxictoxer@gmail.com
+  api_key:
+    secure: PyL1qf3Nb6s/a0iabL1i6w8fnmwLQ7X1npYeNBJY0BV50lz/n4WoANBsdI6Jwxmjj4J2e3R68gGLtfZ/fSKMHgVdzJA2pAipfWFwx+f7vYPRg9ecBRIL+sS6LccsoEtf4b0qrW4/Q9h2UxnOJ9NpLnUwLhTZjmGBqF6bej7R3McHXXD/9zRZDT/lSFqAVBzWcuK6g/j/MmT0dbiFNhcDemgjhERb62G4UhhjjxaL41w/CHorI8KNW08oHnQoitGfKpnFKuMV1aHs6mGQC0jw78tab4hY6XpcO4HBHEJ4KWpQCHN/bk3hmPISnLTTVvVPB3yeMSXC6xVX8WFHAf6yx+l7/cuCXRwu4uA4p9KNxjRuqfThbO9OoTEoDVzmOYuHldSX/8m2F5wPBxGh4s3U0OD5Xk4Z5IKzj9dKNrp1tgXsdo9IGNxOP6QMLnH8WI5loGeG0bueE2aX4Ui0/4Dngnp0ewT/aQtuAgq4v2nL9H6jEUeQ1s4xm5s4VwIU48YRfH7Qsk4rFpkLEIaDMhT32zEfQHUqqPqLjW+aNJ51+04vsylYsDCQ+uD1KXmKWk9DeAA75QEl4fSwm9KLOlcTvUfsGdCnEaSpOiXgj0/zoNMMtiWYcjQ40xeluZjENAJRpEWGPf25/NnUkwrcBcuf8qfNolijp08MAzsMIxcb2is=
+  on:
+    tags: true
+    repo: kthjm/chin
+    branch: publish

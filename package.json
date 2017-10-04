@@ -1,0 +1,75 @@
+{
+   "name": "chin",
+   "version": "0.0.1",
+   "repository": "kthjm/chin",
+   "author": "kthjm <toxictoxer@gmail.com>",
+   "license": "MIT",
+   "description": "Task runner creating plugin DIY by raw package",
+   "keywords": [],
+   "main": "./lib/main/index.js",
+   "bin": "./lib/chin.js",
+   "prettier": {
+      "tabWidth": 3,
+      "semi": false,
+      "singleQuote": true
+   },
+   "babel": {
+      "presets": [["env", { "targets": { "node": "6" } }], "flow"],
+      "plugins": ["add-module-exports", "array-includes"],
+      "env": {
+         "test": {
+            "presets": ["power-assert"],
+            "plugins": ["istanbul", "rewire"]
+         }
+      }
+   },
+   "nyc": {
+      "require": ["babel-register"],
+      "include": ["src/main"],
+      "sourceMap": false,
+      "instrument": false
+   },
+   "scripts": {
+      "flowtyped": "flow-typed install",
+      "flow": "flow",
+      "nycha": "cross-env NODE_ENV=test nyc mocha",
+      "test": "run-s flow nycha",
+      "coverage": "nyc report --reporter=text-lcov | coveralls",
+      "copy": "flow-copy-source ./src/main ./lib/main",
+      "format": "prettier --write **/*.js package.json",
+      "prebuild": "yarn format",
+      "build": "cross-env NODE_ENV=build babel ./src -d ./lib",
+      "postbuild": "run-s copy format",
+      "node": "node --require babel-register"
+   },
+   "devDependencies": {
+      "babel-cli": "^6.26.0",
+      "babel-plugin-add-module-exports": "^0.2.1",
+      "babel-plugin-array-includes": "^2.0.3",
+      "babel-plugin-istanbul": "^4.1.4",
+      "babel-plugin-rewire": "^1.1.0",
+      "babel-preset-env": "^1.6.0",
+      "babel-preset-flow": "^6.23.0",
+      "babel-preset-power-assert": "^1.0.0",
+      "babel-register": "^6.26.0",
+      "coveralls": "^3.0.0",
+      "cross-env": "^5.0.5",
+      "flow-bin": "^0.56.0",
+      "flow-copy-source": "^1.2.1",
+      "flow-typed": "^2.1.5",
+      "mocha": "^4.0.0",
+      "npm-run-all": "^4.1.1",
+      "nyc": "^11.1.0",
+      "power-assert": "^1.4.4",
+      "prettier": "^1.7.4",
+      "rewire": "^2.5.2",
+      "sinon": "^4.0.0"
+   },
+   "dependencies": {
+      "app-root-path": "^2.0.1",
+      "commander": "^2.11.0",
+      "fs-extra": "^4.0.1",
+      "ora": "^1.3.0",
+      "recursive-readdir": "^2.2.1"
+   }
+}
