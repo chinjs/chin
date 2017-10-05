@@ -32,7 +32,7 @@ const bufferPlugin = (opts) => {
 	
 	function bufferTransformer(data){
         return transorm(data)
-		// return buffer
+		// return Buffer | void
     }
 }
 
@@ -43,9 +43,11 @@ const streamPlugin = (opts) => {
     
     return streamTransformer;
     
-    function streamTransformer(stream){
-        return stream.pipe(transform)
-		// return stream
+    function streamTransformer(readable,writable){
+        return readable.pipe(transform)
+		// return stream$Transform | void
+		// need not until pipe(writable)
+		// the arg is optional for on("event")
     }
 }
 ```

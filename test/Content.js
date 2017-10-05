@@ -157,7 +157,7 @@ describe(`class Content:`, () => {
       }
    })
 
-   describe(`exec type === buffer`, () => {
+   describe(`exec type === "buffer"`, () => {
       const local = rewire('../src/main/Content.js')
       const Content = local.default
 
@@ -232,9 +232,17 @@ describe(`class Content:`, () => {
       const Content = local.default
       const { Readable, Writable, Transform } = require('stream')
 
-      it(`result is not stream => throw`, async () => {
-         const expectMessage = 'transform must return stream'
+      it(`!result => resolve()`, async () => {
          const plugin = opts => readable => undefined
+
+         return frame(plugin, content => {
+            return content.exec().then(() => assert.ok(true))
+         })
+      })
+
+      it(`result !== stream => throw`, async () => {
+         const expectMessage = 'transform must return stream'
+         const plugin = opts => readable => ({})
 
          return frame(plugin, content => {
             return content.exec().catch(err => {

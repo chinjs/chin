@@ -145,21 +145,23 @@ export default class Content {
                      const readable = createReadStream(filepath, readOpts)
                      readable.on('error', reject)
 
-                     const result = transform(readable)
+                     const writable = createWriteStream(this.outpath())
+                     writable.on('error', reject)
+                     writable.on('finish', resolve)
 
-                     if (
-                        !result ||
-                        !('readable' in result) ||
-                        !('writable' in result)
+                     const result = transform(readable, writable)
+
+                     if (!result) {
+                        resolve()
+                     } else if (
+                        !result.pipe ||
+                        typeof result.pipe !== 'function' ||
+                        !('readable' in result)
                      ) {
                         readable.destroy(
                            new Error(`transform must return stream`)
                         )
                      } else {
-                        const writable = createWriteStream(this.outpath())
-                        writable.on('error', reject)
-                        writable.on('finish', resolve)
-
                         result.pipe(writable)
                      }
                   })
