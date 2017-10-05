@@ -26,12 +26,11 @@ const contentsExecOra = contents => {
    return Promise.all(
       contents.map(content => {
          const ora = Ora()
-         const message = content.message()
          return content
             .exec()
-            .then(() => ora.succeed(message))
+            .then(() => ora.succeed(content.message()))
             .catch(err => {
-               ora.fail(message)
+               ora.fail(content.message())
                throw err
             })
       })
