@@ -11,8 +11,8 @@ export default (choose, opts) =>
             config = config.default || config
             throwIf(config, 'object', 'config')
             throwIf(preset, 'object', 'preset')
-            const { put, out, exts, weirs, ignore } = config
-            return [put, out, preset, { exts, weirs, ignore }]
+            const { put, out, process, weirs, ignore } = config
+            return [put, out, { process, weirs, ignore }, preset]
          })
       )
       .then(arg =>
@@ -20,20 +20,23 @@ export default (choose, opts) =>
       )
       .catch(errorHandler)
 
-const contentsExecOra = contents =>
-   Promise.all(
+const contentsExecOra = contents => {
+   const ora = Ora()
+   ora.start()
+   return Promise.all(
       contents.map(content => {
          const ora = Ora()
-         ora.start(content.message())
+         const message = content.message()
          return content
             .exec()
-            .then(() => ora.succeed())
+            .then(() => ora.succeed(message))
             .catch(err => {
-               ora.fail()
+               ora.fail(message)
                throw err
             })
       })
-   )
+   ).then(() => ora.stop())
+}
 
 const contentsExec = contents =>
    Promise.all(contents.map(content => content.exec()))

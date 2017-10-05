@@ -32,8 +32,11 @@ describe(`no opts => copy`, () => {
             './test/stub_copy/bar.js',
             content => {
                const expectOut = `${dest}/bar.js`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.ifError(content.encoding)
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.ifError(content.readOpts)
                assert.ifError(content.plugin)
             }
          ],
@@ -41,8 +44,11 @@ describe(`no opts => copy`, () => {
             './test/stub_copy/foo.js',
             content => {
                const expectOut = `${dest}/foo.js`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.ifError(content.encoding, null)
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.ifError(content.readOpts, null)
                assert.ifError(content.plugin)
             }
          ]
@@ -79,7 +85,7 @@ describe(`with opts/preset => plugin`, () => {
          pluginWeir2: () => {}
       }
       const opts = {
-         exts: { js: 'plugin' },
+         process: { js: 'plugin' },
          weirs: [
             ['./weir1', { js: ['pluginWeir1', 'utf8'] }],
             ['./weir1/weir2', { js: ['pluginWeir2', 'base64'] }]
@@ -106,8 +112,11 @@ describe(`with opts/preset => plugin`, () => {
             './test/stub_src/config.md',
             content => {
                const expectOut = `${dest}/config.md`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.deepStrictEqual(content.encoding, null)
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.ifError(content.readOpts)
                assert.ifError(content.plugin)
             }
          ],
@@ -115,8 +124,11 @@ describe(`with opts/preset => plugin`, () => {
             './test/stub_src/image/uncompare.png',
             content => {
                const expectOut = `${dest}/image/uncompare.png`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.deepStrictEqual(content.encoding, null)
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.ifError(content.readOpts)
                assert.ifError(content.plugin)
             }
          ],
@@ -124,8 +136,11 @@ describe(`with opts/preset => plugin`, () => {
             './test/stub_src/index.js',
             content => {
                const expectOut = `${dest}/index.js`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.deepStrictEqual(content.encoding, null)
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.deepStrictEqual(content.readOpts, null)
                assert.deepStrictEqual(content.plugin.fn, preset.plugin)
                assert.deepStrictEqual(content.plugin.name, 'plugin')
             }
@@ -134,8 +149,11 @@ describe(`with opts/preset => plugin`, () => {
             './test/stub_src/weir1/index.js',
             content => {
                const expectOut = `${dest}/weir1/index.js`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.deepStrictEqual(content.encoding, 'utf8')
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.deepStrictEqual(content.readOpts, 'utf8')
                assert.deepStrictEqual(content.plugin.fn, preset.pluginWeir1)
                assert.deepStrictEqual(content.plugin.name, 'pluginWeir1')
             }
@@ -144,15 +162,18 @@ describe(`with opts/preset => plugin`, () => {
             './test/stub_src/weir1/weir2/index.js',
             content => {
                const expectOut = `${dest}/weir1/weir2/index.js`
-               assert.deepStrictEqual(content.out, normalizePath(expectOut))
-               assert.deepStrictEqual(content.encoding, 'base64')
+               assert.deepStrictEqual(
+                  normalizeOutPath(content.out),
+                  normalizePath(expectOut)
+               )
+               assert.deepStrictEqual(content.readOpts, 'base64')
                assert.deepStrictEqual(content.plugin.fn, preset.pluginWeir2)
                assert.deepStrictEqual(content.plugin.name, 'pluginWeir2')
             }
          ]
       ]
 
-      const contents = await chin(src, dest, preset, opts)
+      const contents = await chin(src, dest, opts, preset)
       assert.deepStrictEqual(contents.length, tests.length)
       tests.forEach(([path, test]) => {
          const file = normalizePath(path)
@@ -162,9 +183,13 @@ describe(`with opts/preset => plugin`, () => {
    }
 })
 
-const { normalize, sep } = require('path')
+const { format, normalize, sep } = require('path')
 function normalizePath(path) {
    return normalize(path)
       .split('/')
       .join(sep)
+}
+
+function normalizeOutPath(obj) {
+   return normalize(format(obj))
 }

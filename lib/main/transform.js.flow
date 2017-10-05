@@ -1,9 +1,9 @@
 // @flow
-import Content, { type Exts, type Preset } from './Content.js'
+import Content, { type Process, type Preset } from './Content.js'
 import { resolve, normalize, sep } from 'path'
 import { throwIf, dirReplace } from './utils.js'
 
-type Weir = [string, Exts]
+type Weir = [string, Process]
 export type Weirs = Array<Weir>
 type Files = Array<string>
 type Mixes = Array<string | Content>
@@ -12,21 +12,21 @@ type Contents = Array<Content>
 export default (
    put: string,
    out: string,
-   preset?: Preset,
    files: Files,
-   exts?: Exts,
-   weirs?: Weirs
+   _process?: Process,
+   weirs?: Weirs,
+   preset?: Preset
 ): Array<Content> => {
-   const mixes = transformWeirs(put, out, preset, files, weirs)
-   return transformExts(put, out, preset, mixes, exts)
+   const mixes = transformWeirs(put, out, files, weirs, preset)
+   return transformProcess(put, out, mixes, _process, preset)
 }
 
 const transformWeirs = (
    put: string,
    out: string,
-   preset?: Preset,
    files: Array<string>,
-   weirs?: Weirs
+   weirs?: Weirs,
+   preset?: Preset
 ): Files | Mixes => {
    if (!weirs || !Array.isArray(weirs)) return files
    ;(weirs: Weirs)
@@ -48,21 +48,21 @@ const transformWeirs = (
       if (!applicable) {
          return file
       } else {
-         const exts = applicable[1]
+         const _process = applicable[1]
          const outfile = dirReplace(file, put, out)
-         return new Content(file, outfile, exts, preset)
+         return new Content(file, outfile, _process, preset)
       }
    })
 
    return mixes
 }
 
-const transformExts = (
+const transformProcess = (
    put: string,
    out: string,
-   preset?: Preset,
    mixes: any,
-   exts?: Exts
+   _process?: Process,
+   preset?: Preset
 ): Contents => {
    const contents: Contents = mixes.map(mixture => {
       if (typeof mixture === 'object') {
@@ -70,7 +70,7 @@ const transformExts = (
       } else {
          const file = mixture
          const outfile = dirReplace(mixture, put, out)
-         return new Content(file, outfile, exts, preset)
+         return new Content(file, outfile, _process, preset)
       }
    })
 

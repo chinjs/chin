@@ -1,6 +1,6 @@
 {
    "name": "chin",
-   "version": "0.0.1",
+   "version": "1.0.0",
    "repository": "kthjm/chin",
    "author": "kthjm <toxictoxer@gmail.com>",
    "license": "MIT",
@@ -32,7 +32,7 @@
    "scripts": {
       "flowtyped": "flow-typed install",
       "flow": "flow",
-      "nycha": "cross-env NODE_ENV=test nyc mocha",
+      "nycha": "cross-env NODE_ENV=test nyc mocha -t 10000",
       "test": "run-s flow nycha",
       "coverage": "nyc report --reporter=text-lcov | coveralls",
       "copy": "flow-copy-source ./src/main ./lib/main",

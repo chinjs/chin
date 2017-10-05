@@ -22,12 +22,52 @@ Usage: chin [options] [choose]
     -h, --help           output usage information
 ```
 ## API
+```javascript
+const bufferPlugin = (opts) => {
+    opts.name = `rename`
+    opts.ext = `.other`
+	// edit output path
+
+	return bufferTransformer;
+	
+	function bufferTransformer(data){
+        return transorm(data)
+		// return buffer
+    }
+}
+
+const streamPlugin = (opts) => {
+    opts.dir = `${opts.dir}/foo`
+    opts.ext = `.other`
+	// edit output path
+    
+    return streamTransformer;
+    
+    function streamTransformer(stream){
+        return stream.pipe(transform)
+		// return stream
+    }
+}
+```
 ```json
 {
     "default": {
         "put": "",
         "out": "",
-        "exts": {},
+        "process": {
+            "ext": "bufferPlugin",
+            "ext": ["bufferPlugin", "encoding"],
+            "ext": ["bufferPlugin", {"encoding": "encoding", "flag": "r"}],
+
+            "ext": ["bufferPlugin", "encoding", 0],
+            "ext": ["streamPlugin", "encoding", 1],
+
+            "ext": ["bufferPlugin", "encoding", false],
+            "ext": ["streamPlugin", "encoding", true],
+
+            "ext": ["bufferPlugin", "encoding", "buffer"],
+            "ext": ["streamPlugin", "encoding", "stream"]
+        },
         "weirs": [],
         "ignore": {
             "exts": [],

@@ -20,8 +20,4 @@ export const throwIf = (target: any, type: string, key: string): void => {
    if (type && typeof target !== type) {
       throw new TypeError(`${key} is ${typeof target}`)
    }
-
-   if (!target) {
-      throw new Error(`${key} is not set`)
-   }
 }
