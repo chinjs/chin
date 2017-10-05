@@ -149,8 +149,8 @@ export default class Content {
 
                      if (
                         !result ||
-                        !('_readableState' in result) ||
-                        !('_writableState' in result)
+                        !('readable' in result) ||
+                        !('writable' in result)
                      ) {
                         readable.destroy(
                            new Error(`transform must return stream`)
