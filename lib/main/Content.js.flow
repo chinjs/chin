@@ -222,12 +222,12 @@ const prepareUtils = (readable, writable) => {
 
    readableMethods.forEach(name => {
       const utilName = `readable${upperOnlyFirst(name)}`
-      utils[utilName] = readable[name]
+      utils[utilName] = readable[name].bind(readable)
    })
 
    writableMethods.forEach(name => {
       const utilName = `writable${upperOnlyFirst(name)}`
-      utils[utilName] = writable[name]
+      utils[utilName] = writable[name].bind(writable)
    })
 
    return utils

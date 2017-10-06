@@ -32,7 +32,7 @@ const contentsExecOra = contents => {
                ora.succeed(message)
             })
             .catch(err => {
-               ora.fail(content.message())
+               ora.fail(content.messageTranslate())
                throw err
             })
       })
