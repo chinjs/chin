@@ -29,7 +29,7 @@ const bufferPlugin = (opts) => {
 	// edit output path
 
 	return bufferTransformer;
-	
+
 	function bufferTransformer(data){
         return transorm(data)
 		// return Buffer | void
@@ -40,14 +40,32 @@ const streamPlugin = (opts) => {
     opts.dir = `${opts.dir}/foo`
     opts.ext = `.other`
 	// edit output path
-    
+
     return streamTransformer;
-    
-    function streamTransformer(readable,writable){
-        return readable.pipe(transform)
-		// return stream$Transform | void
-		// need not until pipe(writable)
-		// the arg is optional for on("event")
+
+    function streamTransformer(readablePipe,utils){
+        return readablePipe(transform)
+        /*
+        utils: {
+            readableOn,
+            readableIsPaused,
+            readablePause,
+            readableRead,
+            readableResume,
+            readableSetEncoding,
+            readableUnpipe,
+            readableUnshift,
+            readableWrap,
+            readableDestroy,
+            writableOn,
+            writableCork,
+            writableEnd,
+            writableSetDefaultEncoding,
+            writableUncork,
+            writableWrite,
+            writableDestroy
+        }
+    */
     }
 }
 ```
@@ -87,5 +105,6 @@ const streamPlugin = (opts) => {
 chin
 chin sub
 ```
+
 ## License
 MIT (http://opensource.org/licenses/MIT)

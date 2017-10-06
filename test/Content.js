@@ -58,7 +58,7 @@ describe(`class Content:`, () => {
          })(async () => {
             const content = new Content(...arg)
 
-            const resultMessage = content.message()
+            const resultMessage = content.messageTranslate()
             const expectMessage = `copy: ${normalize(file)} => ${normalize(
                outfile
             )}`
@@ -161,7 +161,7 @@ describe(`class Content:`, () => {
       const local = rewire('../src/main/Content.js')
       const Content = local.default
 
-      const { resolve } = require('path')
+      const { resolve, normalize } = require('path')
       const reOutpath = expect => resolve(expect)
 
       it(`result.constructor === Buffer`, async () => {
@@ -169,11 +169,18 @@ describe(`class Content:`, () => {
          const outputFileCount = 1
          const pluginResult = Buffer.from([])
 
-         return test(outputFileCount, reOutpath(expectOutPath), opts => {
-            opts.dir = `${opts.dir}/bar`
-            opts.name = 'rename'
-            opts.ext = '.txt'
-            return () => pluginResult
+         return test({
+            outputFileCount,
+            result: `pluginBuffer: ${normalize(file)} => ${normalize(
+               expectOutPath
+            )}`,
+            outpath: reOutpath(expectOutPath),
+            plugin: opts => {
+               opts.dir = `${opts.dir}/bar`
+               opts.name = 'rename'
+               opts.ext = '.txt'
+               return () => pluginResult
+            }
          })
       })
 
@@ -184,23 +191,24 @@ describe(`class Content:`, () => {
 
          return Promise.all(
             pluginResults.map(pluginResult =>
-               test(outputFileCount, reOutpath(expectOutPath), opts => {
-                  opts.dir = `${opts.dir}/baa`
-                  opts.name = 'rename'
-                  opts.ext = '.md'
-                  return () => pluginResult
+               test({
+                  outputFileCount,
+                  result: `leave: ${normalize(file)}`,
+                  outpath: reOutpath(expectOutPath),
+                  plugin: opts => {
+                     opts.dir = `${opts.dir}/baa`
+                     opts.name = 'rename'
+                     opts.ext = '.md'
+                     return () => pluginResult
+                  }
                })
             )
          )
       })
 
-      async function test(outputFileCount, outpath, plugin) {
-         const spyReadFile = sinon.spy(async () => {
-            /* do nothing */
-         })
-         const spyOutputFile = sinon.spy(async () => {
-            /* do nothing */
-         })
+      async function test({ outputFileCount, result, outpath, plugin }) {
+         const spyReadFile = sinon.spy(async () => {})
+         const spyOutputFile = sinon.spy(async () => 'done')
          const spyPlugin = sinon.spy(plugin)
 
          await local.__with__({
@@ -213,7 +221,8 @@ describe(`class Content:`, () => {
             const preset = { pluginBuffer: spyPlugin }
             const content = new Content(file, outfile, _process, preset)
 
-            await content.exec()
+            const execResult = await content.exec()
+            assert.deepStrictEqual(execResult, result)
 
             assert.deepStrictEqual(spyReadFile.callCount, 1)
             assert.deepStrictEqual(spyPlugin.callCount, 1)
@@ -231,18 +240,23 @@ describe(`class Content:`, () => {
       const local = rewire('../src/main/Content.js')
       const Content = local.default
       const { Readable, Writable, Transform } = require('stream')
+      const { normalize } = require('path')
 
       it(`!result => resolve()`, async () => {
-         const plugin = opts => readable => undefined
+         const plugin = opts => (pipe, utils) => undefined
 
          return frame(plugin, content => {
-            return content.exec().then(() => assert.ok(true))
+            return content
+               .exec()
+               .then(res =>
+                  assert.deepStrictEqual(res, `leave: ${normalize(file)}`)
+               )
          })
       })
 
       it(`result !== stream => throw`, async () => {
          const expectMessage = 'transform must return stream'
-         const plugin = opts => readable => ({})
+         const plugin = opts => (pipe, utils) => ({})
 
          return frame(plugin, content => {
             return content.exec().catch(err => {
@@ -251,12 +265,10 @@ describe(`class Content:`, () => {
          })
       })
 
-      const plugin = opts => readable => readable.pipe(new Transform())
-
       it(`readable.emit("error")`, async () => {
          const message = `readableStream emit "error"`
 
-         return frame(plugin, async (content, readable) => {
+         return frame(pluginReturnStream, async (content, readable) => {
             try {
                setTimeout(() => readable.emit('error', new Error(message)), 100)
                await content.exec()
@@ -269,24 +281,36 @@ describe(`class Content:`, () => {
       it(`writable.emit("error")`, async () => {
          const message = `writableStream emit "error"`
 
-         return frame(plugin, async (content, readable, writable) => {
-            try {
-               setTimeout(() => writable.emit('error', new Error(message)), 100)
-               await content.exec()
-            } catch (err) {
-               assert.deepStrictEqual(err.message, message)
+         return frame(
+            pluginReturnStream,
+            async (content, readable, writable) => {
+               try {
+                  setTimeout(
+                     () => writable.emit('error', new Error(message)),
+                     100
+                  )
+                  await content.exec()
+               } catch (err) {
+                  assert.deepStrictEqual(err.message, message)
+               }
             }
-         })
+         )
       })
 
       it(`writable.emit("finish")`, async () => {
          const message = `writableStream emit "finish"`
 
-         return frame(plugin, async (content, readable, writable) => {
-            setTimeout(() => writable.emit('finish', message), 100)
-            const result = await content.exec()
-            assert.deepStrictEqual(result, message)
-         })
+         return frame(
+            pluginReturnStream,
+            async (content, readable, writable) => {
+               setTimeout(() => writable.emit('finish', message), 100)
+               const result = await content.exec()
+               assert.deepStrictEqual(
+                  result,
+                  `pluginBuffer: ${normalize(file)} => ${normalize(outfile)}`
+               )
+            }
+         )
       })
 
       async function frame(plugin, test) {
@@ -308,6 +332,34 @@ describe(`class Content:`, () => {
             const content = new Content(file, outfile, _process, preset)
             return test(content, readable, writable)
          })
+      }
+
+      function pluginReturnStream(opts) {
+         return (pipe, utils) => {
+            const methods = [
+               'readableOn',
+               'readableIsPaused',
+               'readablePause',
+               'readableRead',
+               'readableResume',
+               'readableSetEncoding',
+               'readableUnpipe',
+               'readableUnshift',
+               'readableWrap',
+               'readableDestroy',
+               'writableOn',
+               'writableCork',
+               'writableEnd',
+               'writableSetDefaultEncoding',
+               'writableUncork',
+               'writableWrite',
+               'writableDestroy'
+            ]
+            const utilsFns = Object.values(utils)
+            assert.deepStrictEqual(utilsFns.length, methods.length)
+            utilsFns.forEach(fn => assert.ok(typeof fn === 'function'))
+            return pipe(new Transform())
+         }
       }
    })
 })

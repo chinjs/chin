@@ -28,7 +28,9 @@ const contentsExecOra = contents => {
          const ora = Ora()
          return content
             .exec()
-            .then(() => ora.succeed(content.message()))
+            .then(message => {
+               ora.succeed(message)
+            })
             .catch(err => {
                ora.fail(content.message())
                throw err

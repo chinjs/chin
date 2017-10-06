@@ -116,7 +116,9 @@ export default class Content {
       const filepath = resolve(file)
 
       if (!plugin) {
-         return copy(filepath, this.outpath())
+         return copy(filepath, this.outpath()).then(() =>
+            this.messageTranslate()
+         )
       }
 
       const { readOpts } = this
@@ -127,12 +129,15 @@ export default class Content {
          ;(transform: TransformBufferFn)
          return readFile(filepath, readOpts)
             .then(transform)
-            .then(
-               data =>
-                  data &&
-                  data.constructor === Buffer &&
-                  outputFile(this.outpath(), data)
-            )
+            .then(data => {
+               if (data && data.constructor === Buffer) {
+                  return outputFile(this.outpath(), data).then(() =>
+                     this.messageTranslate()
+                  )
+               } else {
+                  return this.messageLeaveAs()
+               }
+            })
       } else if (type === 'stream') {
          ;(transform: TransformStreamFn)
          const outDir = this.out.dir
@@ -147,12 +152,16 @@ export default class Content {
 
                      const writable = createWriteStream(this.outpath())
                      writable.on('error', reject)
-                     writable.on('finish', resolve)
+                     writable.on('finish', () =>
+                        resolve(this.messageTranslate())
+                     )
 
-                     const result = transform(readable, writable)
+                     const pipe = readable.pipe.bind(readable)
+                     const utils = prepareUtils(readable, writable)
+                     const result = transform(pipe, utils)
 
                      if (!result) {
-                        resolve()
+                        resolve(this.messageLeaveAs())
                      } else if (
                         !result.pipe ||
                         typeof result.pipe !== 'function' ||
@@ -170,11 +179,58 @@ export default class Content {
       }
    }
 
-   message() {
+   messageTranslate() {
       const { file, out, plugin } = this
       const which = plugin ? plugin.name : `copy`
       const normalizeFile = normalize(file)
       const normalizeOut = normalize(format(out))
       return `${which}: ${normalizeFile} => ${normalizeOut}`
    }
+
+   messageLeaveAs() {
+      const { file } = this
+      const normalizeFile = normalize(file)
+      return `leave: ${normalizeFile}`
+   }
 }
+
+const readableMethods = [
+   'on',
+   'isPaused',
+   'pause',
+   'read',
+   'resume',
+   'setEncoding',
+   'unpipe',
+   'unshift',
+   'wrap',
+   'destroy'
+]
+
+const writableMethods = [
+   'on',
+   'cork',
+   'end',
+   'setDefaultEncoding',
+   'uncork',
+   'write',
+   'destroy'
+]
+
+const prepareUtils = (readable, writable) => {
+   const utils = {}
+
+   readableMethods.forEach(name => {
+      const utilName = `readable${upperOnlyFirst(name)}`
+      utils[utilName] = readable[name]
+   })
+
+   writableMethods.forEach(name => {
+      const utilName = `writable${upperOnlyFirst(name)}`
+      utils[utilName] = writable[name]
+   })
+
+   return utils
+}
+
+const upperOnlyFirst = string => `${string[0].toUpperCase()}${string.slice(1)}`
