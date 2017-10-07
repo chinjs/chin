@@ -24,12 +24,15 @@ type PathObject = {
    name?: string,
    base?: string
 }
-type BufferFn$Result = Buffer | void
-type TransformBufferFn = (
-   data: Buffer
-) => BufferFn$Result | Promise<BufferFn$Result>
 
-type TransformStreamFn = (stream: stream$Readable) => stream$Transform
+type TransformBufferFn = (data: Buffer) => any | Promise<any>
+
+type ReadablePipe = () => any
+type Utils = { [name: string]: () => any }
+type TransformStreamFn = (
+   readablePipe: ReadablePipe,
+   utils: Utils
+) => stream$Transform
 
 type PluginFn = (opts: PathObject) => TransformBufferFn | TransformStreamFn
 export type Preset = { [name: string]: PluginFn }
@@ -129,15 +132,14 @@ export default class Content {
          ;(transform: TransformBufferFn)
          return readFile(filepath, readOpts)
             .then(transform)
-            .then(data => {
-               if (data && data.constructor === Buffer) {
-                  return outputFile(this.outpath(), data).then(() =>
-                     this.messageTranslate()
-                  )
-               } else {
-                  return this.messageLeaveAs()
-               }
-            })
+            .then(
+               data =>
+                  !data
+                     ? this.messageLeaveAs()
+                     : outputFile(this.outpath(), data).then(() =>
+                          this.messageTranslate()
+                       )
+            )
       } else if (type === 'stream') {
          ;(transform: TransformStreamFn)
          const outDir = this.out.dir

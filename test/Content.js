@@ -158,41 +158,40 @@ describe(`class Content:`, () => {
    })
 
    describe(`exec type === "buffer"`, () => {
-      const local = rewire('../src/main/Content.js')
-      const Content = local.default
-
       const { resolve, normalize } = require('path')
       const reOutpath = expect => resolve(expect)
 
       it(`result.constructor === Buffer`, async () => {
          const expectOutPath = './dest/foo/bar/rename.txt'
-         const outputFileCount = 1
-         const pluginResult = Buffer.from([])
-
-         return test({
-            outputFileCount,
-            result: `pluginBuffer: ${normalize(file)} => ${normalize(
-               expectOutPath
-            )}`,
-            outpath: reOutpath(expectOutPath),
-            plugin: opts => {
-               opts.dir = `${opts.dir}/bar`
-               opts.name = 'rename'
-               opts.ext = '.txt'
-               return () => pluginResult
-            }
-         })
-      })
-
-      it(`result.constructor !== Buffer`, async () => {
-         const expectOutPath = './dest/foo/baa/rename.md'
-         const outputFileCount = 0
-         const pluginResults = ['string', 4, undefined, true, false]
+         const pluginResults = [Buffer.from([]), true, 'string', 3, [], {}]
 
          return Promise.all(
             pluginResults.map(pluginResult =>
                test({
-                  outputFileCount,
+                  outputFileCount: 1,
+                  result: `pluginBuffer: ${normalize(file)} => ${normalize(
+                     expectOutPath
+                  )}`,
+                  outpath: reOutpath(expectOutPath),
+                  plugin: opts => {
+                     opts.dir = `${opts.dir}/bar`
+                     opts.name = 'rename'
+                     opts.ext = '.txt'
+                     return () => pluginResult
+                  }
+               })
+            )
+         )
+      })
+
+      it(`result.constructor !== Buffer`, async () => {
+         const expectOutPath = './dest/foo/baa/rename.md'
+         const pluginResults = [undefined, false, null, 0]
+
+         return Promise.all(
+            pluginResults.map(pluginResult =>
+               test({
+                  outputFileCount: 0,
                   result: `leave: ${normalize(file)}`,
                   outpath: reOutpath(expectOutPath),
                   plugin: opts => {
@@ -207,8 +206,11 @@ describe(`class Content:`, () => {
       })
 
       async function test({ outputFileCount, result, outpath, plugin }) {
+         const local = rewire('../src/main/Content.js')
+         const Content = local.default
+
          const spyReadFile = sinon.spy(async () => {})
-         const spyOutputFile = sinon.spy(async () => 'done')
+         const spyOutputFile = sinon.spy(async () => {})
          const spyPlugin = sinon.spy(plugin)
 
          await local.__with__({

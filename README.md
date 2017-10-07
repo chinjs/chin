@@ -32,7 +32,6 @@ const bufferPlugin = (opts) => {
 
 	function bufferTransformer(data){
         return transorm(data)
-		// return Buffer | void
     }
 }
 
