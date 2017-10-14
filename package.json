@@ -1,11 +1,11 @@
 {
    "name": "chin",
-   "version": "2.0.2",
+   "version": "2.0.3",
    "repository": "kthjm/chin",
    "author": "kthjm <toxictoxer@gmail.com>",
    "license": "MIT",
    "description": "Task runner creating plugin DIY by raw package",
-   "keywords": [],
+   "keywords": ["task","directory","cli","dir"],
    "main": "./lib/main/index.js",
    "bin": "./lib/chin.js",
    "prettier": {

@@ -2,13 +2,18 @@
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![Build Status](https://travis-ci.org/kthjm/chin.svg)](https://travis-ci.org/kthjm/chin)
 [![Coverage Status](https://coveralls.io/repos/github/kthjm/chin/badge.svg)](https://coveralls.io/github/kthjm/chin)
+
 > In Japan, using a microwave oven is called "chin" because the completion sound was heard like that.
+
+Run task by unit the directory.  
+DIY Transform by using raw package.
 
 ## Installation
 ```shell
 yarn add -D chin
 ```
 ## Usage
+
 ```shel
 Usage: chin [options] [choose]
 
@@ -21,53 +26,7 @@ Usage: chin [options] [choose]
     -v, --verbose
     -h, --help           output usage information
 ```
-## API
-```javascript
-const bufferPlugin = (opts) => {
-    opts.name = `rename`
-    opts.ext = `.other`
-	// edit output path
 
-	return bufferTransformer;
-
-	function bufferTransformer(data){
-        return transorm(data)
-    }
-}
-
-const streamPlugin = (opts) => {
-    opts.dir = `${opts.dir}/foo`
-    opts.ext = `.other`
-	// edit output path
-
-    return streamTransformer;
-
-    function streamTransformer(readablePipe,utils){
-        return readablePipe(transform)
-        /*
-        utils: {
-            readableOn,
-            readableIsPaused,
-            readablePause,
-            readableRead,
-            readableResume,
-            readableSetEncoding,
-            readableUnpipe,
-            readableUnshift,
-            readableWrap,
-            readableDestroy,
-            writableOn,
-            writableCork,
-            writableEnd,
-            writableSetDefaultEncoding,
-            writableUncork,
-            writableWrite,
-            writableDestroy
-        }
-    */
-    }
-}
-```
 ```json
 {
     "default": {
@@ -104,6 +63,67 @@ const streamPlugin = (opts) => {
 chin
 chin sub
 ```
+
+## API
+
+### condig
+
+default: `package.json.chin` || `chin.config.json`
+
+#### put
+#### out
+#### process
+##### ext
+#### weirs
+#### ignore
+##### exts
+##### targets
+##### compare
+
+### plugin
+```javascript
+const bufferPlugin = (opts) => {
+    opts.name = `rename`
+    opts.ext = `.other`
+    return transform
+}
+```
+#### `buffer`
+```javascript
+const transformBuffer = (data: Buffer) => {
+    const result = transorm(data)
+    return result
+}
+```
+#### `stream`
+```javascript
+const transormStream = (readablePipe, utils) => {
+    utils.writableOn(`finish`, () => {})
+    return readablePipe(transform)
+}
+```
+##### utils
+[`${'readable' | 'writable'}${Name}`](https://nodejs.org/api/stream.html)
+
+e.g. `writableOn`
+
+<!-- - readableOn
+- readableIsPaused,
+- readablePause,
+- readableRead,
+- readableResume,
+- readableSetEncoding,
+- readableUnpipe,
+- readableUnshift,
+- readableWrap,
+- readableDestroy,
+- writableOn,
+- writableCork,
+- writableEnd,
+- writableSetDefaultEncoding,
+- writableUncork,
+- writableWrite,
+- writableDestroy -->
 
 ## License
 MIT (http://opensource.org/licenses/MIT)
