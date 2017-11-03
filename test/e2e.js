@@ -18,7 +18,7 @@ describe(`no opts => copy`, () => {
    })
 
    it('lib', async () => {
-      const chin = rewire('../lib/main')
+      const chin = rewire('../lib/main').default
       await e2e(chin)
       return
    })
@@ -71,7 +71,7 @@ describe(`with opts/preset => plugin`, () => {
    })
 
    it('lib', async () => {
-      const chin = rewire('../lib/main')
+      const chin = rewire('../lib/main').default
       await e2e(chin)
       return
    })

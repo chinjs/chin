@@ -1,11 +1,11 @@
 {
    "name": "chin",
-   "version": "2.0.3",
+   "version": "2.1.0",
    "repository": "kthjm/chin",
    "author": "kthjm <toxictoxer@gmail.com>",
    "license": "MIT",
    "description": "Task runner creating plugin DIY by raw package",
-   "keywords": ["task","directory","cli","dir"],
+   "keywords": ["task", "directory", "cli", "dir"],
    "main": "./lib/main/index.js",
    "bin": "./lib/chin.js",
    "prettier": {
@@ -14,12 +14,22 @@
       "singleQuote": true
    },
    "babel": {
-      "presets": [["env", { "targets": { "node": "6" } }], "flow"],
-      "plugins": ["add-module-exports", "array-includes"],
+      "presets": [
+         [
+            "env",
+            {
+               "targets": {
+                  "node": "6"
+               },
+               "debug": true
+            }
+         ],
+         "flow"
+      ],
       "env": {
          "test": {
             "presets": ["power-assert"],
-            "plugins": ["istanbul", "rewire"]
+            "plugins": ["istanbul"]
          }
       }
    },
@@ -30,31 +40,24 @@
       "instrument": false
    },
    "scripts": {
-      "flowtyped": "flow-typed install",
-      "flow": "flow",
-      "nycha": "cross-env NODE_ENV=test nyc mocha -t 10000",
-      "test": "run-s flow nycha",
       "coverage": "nyc report --reporter=text-lcov | coveralls",
-      "copy": "flow-copy-source ./src/main ./lib/main",
-      "format": "prettier --write **/*.js package.json",
-      "prebuild": "yarn format",
+      "pretest": "flow",
+      "test": "cross-env NODE_ENV=test nyc mocha -t 10000",
+      "prebuild": "yarn test",
       "build": "cross-env NODE_ENV=build babel ./src -d ./lib",
-      "postbuild": "run-s copy format",
-      "node": "node --require babel-register"
+      "postbuild": "run-s format copy",
+      "format": "prettier --write **/*.js package.json",
+      "copy": "flow-copy-source ./src/main ./lib/main"
    },
    "devDependencies": {
       "babel-cli": "^6.26.0",
-      "babel-plugin-add-module-exports": "^0.2.1",
-      "babel-plugin-array-includes": "^2.0.3",
       "babel-plugin-istanbul": "^4.1.4",
-      "babel-plugin-rewire": "^1.1.0",
       "babel-preset-env": "^1.6.0",
       "babel-preset-flow": "^6.23.0",
       "babel-preset-power-assert": "^1.0.0",
-      "babel-register": "^6.26.0",
       "coveralls": "^3.0.0",
       "cross-env": "^5.0.5",
-      "flow-bin": "^0.56.0",
+      "flow-bin": "^0.58.0",
       "flow-copy-source": "^1.2.1",
       "flow-typed": "^2.1.5",
       "mocha": "^4.0.0",

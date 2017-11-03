@@ -5,7 +5,7 @@
 
 > In Japan, using a microwave oven is called "chin" because the completion sound was heard like that.
 
-Run task by unit the directory.  
+Run task by unit the directory.
 DIY Transform by using raw package.
 
 ## Installation
@@ -66,7 +66,7 @@ chin sub
 
 ## API
 
-### condig
+### config
 
 default: `package.json.chin` || `chin.config.json`
 
@@ -82,7 +82,7 @@ default: `package.json.chin` || `chin.config.json`
 
 ### plugin
 ```javascript
-const bufferPlugin = (opts) => {
+const plugin = (opts) => {
     opts.name = `rename`
     opts.ext = `.other`
     return transform
