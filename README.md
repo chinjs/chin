@@ -1,12 +1,11 @@
-# chin
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![Build Status](https://travis-ci.org/kthjm/chin.svg)](https://travis-ci.org/kthjm/chin)
-[![Coverage Status](https://coveralls.io/repos/github/kthjm/chin/badge.svg)](https://coveralls.io/github/kthjm/chin)
+# chin;
+[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![Build Status](https://img.shields.io/travis/kthjm/chin.svg?style=flat-square)](https://travis-ci.org/kthjm/chin)
+[![Coverage Status](https://img.shields.io/codecov/c/github/kthjm/chin.svg?style=flat-square)](https://codecov.io/github/kthjm/chin)
 
 > In Japan, using a microwave oven is called "chin" because the completion sound was heard like that.
 
-Run task by unit the directory.
-DIY Transform by using raw package.
+Using raw package transform directory.
 
 ## Installation
 ```shell

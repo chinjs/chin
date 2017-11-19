@@ -1,8 +1,15 @@
 language: node_js
 node_js:
 - '8'
+# sude: required
+# services:
+#   - docker
+cache:
+  yarn: true
+  directories:
+    - node_modules
 after_success:
-- yarn coverage
+  - yarn coverage
 deploy:
   provider: npm
   email: toxictoxer@gmail.com
