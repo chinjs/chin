@@ -1,7 +1,10 @@
 # chin
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+[![npm](https://img.shields.io/npm/v/chin.svg?style=flat-square)](https://www.npmjs.com/package/chin)
+[![npm](https://img.shields.io/npm/dm/chin.svg?style=flat-square)](https://www.npmjs.com/package/chin)
 [![Build Status](https://img.shields.io/travis/kthjm/chin.svg?style=flat-square)](https://travis-ci.org/kthjm/chin)
 [![Coverage Status](https://img.shields.io/codecov/c/github/kthjm/chin.svg?style=flat-square)](https://codecov.io/github/kthjm/chin)
+[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 > In Japan, using a microwave oven is called "chin" because the completion sound was heard like that.
 
