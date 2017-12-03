@@ -1,6 +1,7 @@
 flow-typed/
 src/
 test/
+.babelrc
 .flowconfig
 .gitignore
 .prettierignore

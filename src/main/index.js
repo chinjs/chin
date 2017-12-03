@@ -6,21 +6,21 @@ import { throwIf } from './utils.js'
 import type Content, { Preset, Process } from './Content.js'
 
 export default (
-   put: string,
-   out: string,
-   opts: {
-      process?: Process,
-      weirs?: Weirs,
-      ignore?: Opts$Extract
-   } = {},
-   preset?: Preset
+  put: string,
+  out: string,
+  opts: {
+    process?: Process,
+    weirs?: Weirs,
+    ignore?: Opts$Extract
+  } = {},
+  preset?: Preset
 ): Promise<Array<Content>> =>
-   Promise.resolve().then(() => {
-      throwIf(put, 'string', 'put')
-      throwIf(out, 'string', 'out')
-      put = normalize(put)
-      out = normalize(out)
-      return extract(put, opts.ignore).then(files =>
-         transform(put, out, files, opts.process, opts.weirs, preset)
-      )
-   })
+  Promise.resolve().then(() => {
+    throwIf(put, 'string', 'put')
+    throwIf(out, 'string', 'out')
+    put = normalize(put)
+    out = normalize(out)
+    return extract(put, opts.ignore).then(files =>
+      transform(put, out, files, opts.process, opts.weirs, preset)
+    )
+  })

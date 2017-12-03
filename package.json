@@ -1,78 +1,58 @@
 {
-   "name": "chin",
-   "version": "2.1.1",
-   "repository": "kthjm/chin",
-   "author": "kthjm <toxictoxer@gmail.com>",
-   "license": "MIT",
-   "description": "creating plugin DIY by raw package transform directory",
-   "keywords": ["task", "directory", "cli", "dir"],
-   "main": "lib/main",
-   "bin": "lib/chin.js",
-   "prettier": {
-      "tabWidth": 3,
-      "semi": false,
-      "singleQuote": true
-   },
-   "babel": {
-      "presets": [
-         [
-            "env",
-            {
-               "targets": {
-                  "node": "6"
-               },
-               "debug": true
-            }
-         ],
-         "flow"
-      ],
-      "env": {
-         "test": {
-            "presets": ["power-assert"],
-            "plugins": ["istanbul"]
-         }
-      }
-   },
-   "nyc": {
-      "require": ["babel-register"],
-      "include": ["src/main"],
-      "sourceMap": false,
-      "instrument": false
-   },
-   "scripts": {
-      "pretest": "flow",
-      "test": "cross-env NODE_ENV=test nyc mocha -t 10000",
-      "prebuild": "yarn test",
-      "build": "cross-env NODE_ENV=build babel ./src -d ./lib",
-      "postbuild": "run-s format copy",
-      "format": "prettier --write **/*.js package.json",
-      "copy": "flow-copy-source ./src/main ./lib/main",
-      "coverage": "nyc report --reporter=lcov && codecov"
-   },
-   "devDependencies": {
-      "babel-cli": "^6.26.0",
-      "babel-plugin-istanbul": "^4.1.4",
-      "babel-preset-env": "^1.6.0",
-      "babel-preset-flow": "^6.23.0",
-      "babel-preset-power-assert": "^1.0.0",
-      "codecov": "^3.0.0",
-      "cross-env": "^5.0.5",
-      "flow-bin": "^0.59.0",
-      "flow-copy-source": "^1.2.1",
-      "flow-typed": "^2.1.5",
-      "mocha": "^4.0.0",
-      "npm-run-all": "^4.1.2",
-      "nyc": "^11.1.0",
-      "power-assert": "^1.4.4",
-      "prettier": "^1.8.2",
-      "rewire": "^3.0.1",
-      "sinon": "^4.1.2"
-   },
-   "dependencies": {
-      "app-root-path": "^2.0.1",
-      "commander": "^2.11.0",
-      "fs-extra": "^4.0.1",
-      "ora": "^1.3.0",
-      "recursive-readdir": "^2.2.1"
-   }
+  "name": "chin",
+  "version": "2.1.2",
+  "repository": "kthjm/chin",
+  "author": "kthjm <toxictoxer@gmail.com>",
+  "license": "MIT",
+  "description": "creating plugin DIY by raw package transform directory",
+  "keywords": ["task", "directory", "cli", "dir"],
+  "main": "lib/main",
+  "bin": "lib/chin.js",
+  "prettier": {
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  },
+  "nyc": {
+    "require": ["babel-register"],
+    "include": ["src/main"],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "scripts": {
+    "pretest": "flow",
+    "test": "cross-env NODE_ENV=test nyc mocha -t 10000",
+    "prebuild": "yarn test",
+    "build": "cross-env NODE_ENV=build babel src -d lib",
+    "postbuild": "run-s format copy",
+    "format": "prettier --write **/*.js package.json",
+    "copy": "flow-copy-source src/main lib/main",
+    "coverage": "nyc report --reporter=lcov && codecov"
+  },
+  "dependencies": {
+    "app-root-path": "^2.0.1",
+    "commander": "^2.11.0",
+    "fs-extra": "^4.0.1",
+    "ora": "^1.3.0",
+    "recursive-readdir": "^2.2.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-istanbul": "^4.1.4",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-power-assert": "^1.0.0",
+    "codecov": "^3.0.0",
+    "cross-env": "^5.0.5",
+    "flow-bin": "^0.59.0",
+    "flow-copy-source": "^1.2.1",
+    "flow-typed": "^2.1.5",
+    "mocha": "^4.0.0",
+    "npm-run-all": "^4.1.2",
+    "nyc": "^11.1.0",
+    "power-assert": "^1.4.4",
+    "prettier": "^1.8.2",
+    "rewire": "^3.0.1",
+    "sinon": "^4.1.2"
+  }
 }
