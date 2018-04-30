@@ -1,9 +1,11 @@
 flow-typed/
 src/
-test/
 .babelrc
 .flowconfig
 .gitignore
-.prettierignore
 .travis.yml
+codecov.yml
+rollup.config.js
+test.js
+types.js
 yarn.lock

@@ -1,12 +1,23 @@
 {
-   "presets": [
-      ["env", { "targets": { "node": "6" } }],
-      "flow"
-   ],
    "env": {
-      "test": {
-         "presets": ["power-assert"],
-         "plugins": ["istanbul"]
+      "TEST": {
+         "presets": [
+           "env",
+           "flow",
+           "power-assert"
+         ],
+         "plugins": [
+           "istanbul",
+           ["transform-runtime", {
+             "helpers": false,
+             "polyfill": false,
+             "regenerator": true
+           }]
+         ]
+      },
+      "BUILD": {
+        "presets": [["env", { "targets": { "node": "6" }, "modules": false }]],
+        "plugins": ["external-helpers"]
       }
    }
 }
