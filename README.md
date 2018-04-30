@@ -42,18 +42,21 @@ yarn add -D chin
 export default {
   put: dirpath,
   out: dirpath,
+  processors?: Processors | [dirpath, Processors][],
+  before?: Function,
+  after?: Function,
   clean?: boolean,
   quiet?: boolean,
   ignored?: Matcher[],
-  watch?: ChokidarOpts,
-  processors?: Processors | [dirpath, Processors][],
-  before: Function,
-  after: Function
+  watch?: ChokidarOpts
 }
 ```
 
 #### `put/out: dirpath`
 directory path. `put => out`
+
+#### `before/after: Function`
+Hook function.
 
 #### `clean: boolean`
 [remove](https://github.com/jprichardson/node-fs-extra/blob/master/docs/remove.md) `config.out` before process.
@@ -62,13 +65,10 @@ directory path. `put => out`
 Whether log or not.
 
 #### `ignored: Matcher[]`
-`Matcher` is used for [minimatch](https://github.com/isaacs/minimatch) and [anymatch](https://github.com/micromatch/anymatch).
+Used for [recursive-readdir](https://github.com/jergason/recursive-readdir) (and [chokidar](https://github.com/paulmillr/chokidar)).
 
 #### `watch: {}`
 [chokidar](https://github.com/paulmillr/chokidar)'s options. If `config.watch.ignored` is void, `config.ignored` used.
-
-#### `before/after: Function`
-Hook function.
 
 ### `processors: Processors | [dirpath, Processors][]`
 ```js
@@ -89,43 +89,54 @@ type Processors = {
 const processor = (data, util) => dataTransformed
 const streamProcessor = (pipe, util) => pipe(streamDuplex)
 ```
-Able to edit outpath like `[outpath, result] | [outpath, result][]`.
+Able to edit outpath like `[outpath, result]` or `[outpath, result][]`.
 
 #### `util: {}`
 - `on`: `"finish"` is emitted after write.
 - `out`: [parsed](https://nodejs.org/api/path.html#path_path_parse_path) default outpath.
 
-`config.processors` can be set as array. file is matched by `processors.find()`, so the index used as priority. A file that is not matched is just copied.
+`config.processors` can be set as array. file is matched by `processors.find()`, so the index used as priority, and not be fallbacked. A file that match no processor will be just copied. 
 ```js
 export default {
   put: 'assets',
   out: 'public',
   processors: [
+    ['dir1/dir2', { [ext]: {} }], // assets/dir1/dir2/** => public/dir1/dir2/**
     ['dir1', { [ext]: {} }], // assets/dir1/** => public/dir1/**
-    ['dir2', { [ext]: {} }], // assets/dir2/** => public/dir2/**
-    ['/', { [ext]: {} }] // assets/** => public/**
+    ['.', { [ext]: {} }] // assets/** => public/**
   ]
 }
 ```
 ## Plugin
 Example:
 ```js
-export default (opts) => {
-  const processor = (data, util) => {}
+export const plugin = (opts) => {
+  return (data, util) => {}
+}
+
+export const pluginWithHook = (opts) => {
   const before = () => {}
   const after = () => {}
-  return { processor, after, before }
+  const processor = (data, util) => {}
+  return { before, after, processor }
 }
 ```
 ```js
-import pluginWithHook from './plugin'
+import { plugin, pluginWithHook } from './plugins'
 
-const { processor, before, after } = pluginWithHook({})
+const { before, after, processor } = pluginWithHook({})
 
 export default {
-  processors: { [ext]: { processor } },
-  before: () => before(),
-  after: () => after()
+  before: () => {
+    before()
+  },
+  after: () => {
+    after()
+  },
+  processors: {
+    [ext1]: { processor: plugin({}) },
+    [ext2]: { processor }
+  }
 }
 ```
 
