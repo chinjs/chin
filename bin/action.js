@@ -33,6 +33,77 @@ const getConfig = (configValue) => {
   return 'default' in config ? config['default'] : config
 }
 
+const actionFrame = (program, action) => Promise.resolve()
+.then(() =>
+  program.require &&
+  requireModules(program.require)
+)
+.then(() =>
+  program.config
+    ? getConfig(program.config)
+    : consola.info('no config')
+)
+.then((config = {}) =>
+  Array.isArray(config)
+    ? config
+    : [config]
+)
+.then(configs =>
+  recursiveSpliceAction(
+    program,
+    configs,
+    action
+  )
+)
+.then(() => console.log(''))
+.catch((err) => {
+  consola.error(err)
+  process.exit(1)
+})
+
+const recursiveSpliceAction = (program, configs, action, isCutline) => {
+
+  const config = configs.splice(0, 1)[0]
+
+  const { put, out, clean, verbose } = normalizeOptions(program, config)
+  const { before, after, ignored, processors, watch } = config
+
+  return Promise.resolve()
+  .then(() =>
+    verbose &&
+    isCutline &&
+    cutLog()
+  )
+  .then(() =>
+    verbose &&
+    declareLog(program.version(), put, out)
+  )
+  .then(() =>
+    typeof before === 'function' &&
+    before()
+  )
+  .then(() =>
+    clean &&
+    remove(out)
+  )
+  .then(() =>
+    action({ put, out, verbose, ignored, processors, watch })
+  )
+  .then(() =>
+    typeof after === 'function' &&
+    after()
+  )
+  .then(() =>
+    configs.length &&
+    recursiveSpliceAction(
+      program,
+      configs,
+      action,
+      true
+    )
+  )
+}
+
 const normalizeOptions = (program, config) => ({
   put: program.put || config.put || PUT,
   out: program.out || config.out || OUT,
@@ -40,41 +111,12 @@ const normalizeOptions = (program, config) => ({
   verbose: !program.quiet && !config.quiet
 })
 
+const cutLog = () => console.log('\n---------------')
+
 const declareLog = (version, put, out) => console.log(`
 chin@${version}
 put: ${put}
 out: ${out}
 `)
-
-const actionFrame = (program, action) =>
-  Promise.resolve()
-  .then(() => program.require && requireModules(program.require))
-  .then(() => program.config ? getConfig(program.config) : consola.info('no config'))
-  .then((config = {}) => {
-    const { put, out, clean, verbose } = normalizeOptions(program, config)
-    const { before, after, ignored, processors, watch } = config
-    return (
-      Promise.resolve()
-      .then(() => verbose && declareLog(program.version(), put, out))
-      .then(() => typeof before === 'function' && before())
-      .then(() => clean && remove(out))
-      .then(() =>
-        action({
-          put,
-          out,
-          verbose,
-          ignored,
-          processors,
-          watch
-        })
-      )
-      .then(() => typeof after === 'function' && after())
-    )
-  })
-  .then(() => console.log(''))
-  .catch((err) => {
-    consola.error(err)
-    process.exit(1)
-  })
 
 module.exports = { actionFrame, PUT, OUT, CONFIG1, CONFIG2 }

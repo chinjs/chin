@@ -17,8 +17,10 @@ export type Matcher = string
 
 export type ChokidarOpts = { [name: string]: any }
 
+export type Extension = string
+
 export type Processors = {
-  [ext: string]: {
+  [Extension]: {
     isStream?: boolean,
     options?: ReadFileOpts | CreateReadStreamOpts,
     processor?: ProcessorFn | StreamProcessorFn

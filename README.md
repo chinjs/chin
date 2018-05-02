@@ -16,6 +16,7 @@ yarn add -D chin
 ```
 ## CLI
 ```shell
+
   Usage: chin [options] [command]
 
   Options:
@@ -36,27 +37,37 @@ yarn add -D chin
   Example:
 
     chin -c -r babel-register,dotenv/config
+
 ```
 ## Config
 ```js
-export default {
+const config = {
+  /* core */
   put: dirpath,
   out: dirpath,
-  processors?: Processors | [dirpath, Processors][],
-  before?: Function,
-  after?: Function,
+  ignored?: Matcher[],
+  processors?: processors | [path, processors][],
+
+  /* optional */
   clean?: boolean,
   quiet?: boolean,
-  ignored?: Matcher[],
+
+  /* hooks */
+  before?: Function,
+  after?: Function,
+
+  /* used in `watch` */
   watch?: ChokidarOpts
 }
+
+export default config | config[]
 ```
 
 #### `put/out: dirpath`
-directory path. `put => out`
+directory path. (`put => out`)
 
-#### `before/after: Function`
-Hook function.
+#### `ignored: Matcher[]`
+Used for [recursive-readdir](https://github.com/jergason/recursive-readdir) (and [chokidar](https://github.com/paulmillr/chokidar)).
 
 #### `clean: boolean`
 [remove](https://github.com/jprichardson/node-fs-extra/blob/master/docs/remove.md) `config.out` before process.
@@ -64,13 +75,13 @@ Hook function.
 #### `quiet: boolean`
 Whether log or not.
 
-#### `ignored: Matcher[]`
-Used for [recursive-readdir](https://github.com/jergason/recursive-readdir) (and [chokidar](https://github.com/paulmillr/chokidar)).
+#### `before/after: Function`
+Hook function.
 
 #### `watch: {}`
 [chokidar](https://github.com/paulmillr/chokidar)'s options. If `config.watch.ignored` is void, `config.ignored` used.
 
-### `processors: Processors | [dirpath, Processors][]`
+### `processors: {[ext]}`
 ```js
 type Processors = {
   [extension]: {
@@ -80,63 +91,86 @@ type Processors = {
   }
 }
 ```
+`.` is unnecessary at `[extension]` (not `.txt` but `txt`). Files that match no processor will be just copied.
+
 `isStream` switches read-file function that `options` belongs.
 - [`readFile`](https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback)
 - [`createReadStream`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)
 
-`processor` is passed the result.
-```js
-const processor = (data, util) => dataTransformed
-const streamProcessor = (pipe, util) => pipe(streamDuplex)
-```
-Able to edit outpath like `[outpath, result]` or `[outpath, result][]`.
+So `processor` has two type. The outpath can be edited like `[outpath, result]` or `[outpath, result][]`.
 
+```js
+const processor = (data, util) =>
+  dataTransformed |
+  [outpath, dataTransformed] |
+  [outpath, dataTransformed][]
+
+const streamProcessor = (pipe, util) =>
+  pipe(streamDuplex) |
+  [outpath, pipe(streamDuplex)] |
+  [outpath, pipe(streamDuplex)][]
+```
 #### `util: {}`
 - `on`: `"finish"` is emitted after write.
 - `out`: [parsed](https://nodejs.org/api/path.html#path_path_parse_path) default outpath.
 
-`config.processors` can be set as array. file is matched by `processors.find()`, so the index used as priority, and not be fallbacked. A file that match no processor will be just copied. 
+### Array in Config
+
+Both `config` and `config.processors` can set as array.
+
+In `config.processors` that set as `[path, processors][]`, Files are matched by `config.processors.find()`, so the index used as priority, and not be fallbacked.
+
 ```js
-export default {
-  put: 'assets',
-  out: 'public',
-  processors: [
-    ['dir1/dir2', { [ext]: {} }], // assets/dir1/dir2/** => public/dir1/dir2/**
-    ['dir1', { [ext]: {} }], // assets/dir1/** => public/dir1/**
-    ['.', { [ext]: {} }] // assets/** => public/**
-  ]
-}
+export default [
+  {
+    put: 'assets',
+    out: 'public',
+    processors: [
+      ['dir1/dir2', { [ext]: {} }], // assets/dir1/dir2/** => public/dir1/dir2/**
+      ['dir1/file1.ext', { [ext]: {} }], // assets/dir1/file1.ext => public/dir1/file1.ext
+      ['dir1/', { [ext]: {} }], // assets/dir1/** => public/dir1/**
+      ['*', { [ext]: {} }] // assets/** => public/**
+    ]
+  },
+  {..},
+  {..}
+]
 ```
+
 ## Plugin
 Example:
 ```js
-export const plugin = (opts) => {
+export const pluginAsExt = (opts) => {
+  const isStream = true
+  const options = {}
+  const processor = (pipe, util) => {}
+  return { isStream, options, processor }
+}
+
+export const pluginAsProcessor = (opts) => {
   return (data, util) => {}
 }
 
 export const pluginWithHook = (opts) => {
-  const before = () => {}
-  const after = () => {}
-  const processor = (data, util) => {}
-  return { before, after, processor }
+  const ext = pluginAsProcessor({})
+  const beforeHook = () => {}
+  const afterHook = () => {}
+  return { ext, beforeHook, afterHook }
 }
 ```
 ```js
-import { plugin, pluginWithHook } from './plugins'
+import { pluginAsExt, pluginAsProcessor, pluginWithHook } from './plugins'
 
-const { before, after, processor } = pluginWithHook({})
+const pluginResult = pluginWithHook({})
 
 export default {
-  before: () => {
-    before()
-  },
-  after: () => {
-    after()
-  },
   processors: {
-    [ext1]: { processor: plugin({}) },
-    [ext2]: { processor }
-  }
+    [ext0]: pluginAsExt({}),
+    [ext1]: { processor: pluginAsProcessor({}) },
+    [ext2]: pluginResult.ext
+  },
+  before: () => pluginResult.beforeHook(),
+  after: () => pluginResult.afterHook()
 }
 ```
 

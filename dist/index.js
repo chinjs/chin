@@ -19,51 +19,123 @@ var figures = _interopDefault(require('figures'))
 
 //
 
+var asyncToGenerator = function(fn) {
+  return function() {
+    var gen = fn.apply(this, arguments)
+    return new Promise(function(resolve, reject) {
+      function step(key, arg) {
+        try {
+          var info = gen[key](arg)
+          var value = info.value
+        } catch (error) {
+          reject(error)
+          return
+        }
+
+        if (info.done) {
+          resolve(value)
+        } else {
+          return Promise.resolve(value).then(
+            function(value) {
+              step('next', value)
+            },
+            function(err) {
+              step('throw', err)
+            }
+          )
+        }
+      }
+
+      return step('next')
+    })
+  }
+}
+
+var slicedToArray = (function() {
+  function sliceIterator(arr, i) {
+    var _arr = []
+    var _n = true
+    var _d = false
+    var _e = undefined
+
+    try {
+      for (
+        var _i = arr[Symbol.iterator](), _s;
+        !(_n = (_s = _i.next()).done);
+        _n = true
+      ) {
+        _arr.push(_s.value)
+
+        if (i && _arr.length === i) break
+      }
+    } catch (err) {
+      _d = true
+      _e = err
+    } finally {
+      try {
+        if (!_n && _i['return']) _i['return']()
+      } finally {
+        if (_d) throw _e
+      }
+    }
+
+    return _arr
+  }
+
+  return function(arr, i) {
+    if (Array.isArray(arr)) {
+      return arr
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i)
+    } else {
+      throw new TypeError(
+        'Invalid attempt to destructure non-iterable instance'
+      )
+    }
+  }
+})()
+
 //
 
 var prepare = (put, out, processors) => {
   if (!Array.isArray(processors)) {
     return [
       new Map([[put, []]]),
-      filepath => createPair(filepath, put, out, put, processors)
+      filepath => [put, createEgg(filepath, put, out, processors)]
     ]
   }
 
-  const processorsEntries = processors.map(([dirpath, _processors]) => [
-    dirpath === '/' || dirpath === './' ? put : path.join(put, dirpath),
+  const findEntries = processors.map(([dirpath, _processors]) => [
+    dirpath === '/' || dirpath === './' || dirpath === '*'
+      ? put
+      : path.join(put, dirpath),
     _processors
   ])
 
   return [
-    new Map(
-      [[put, []]].concat(processorsEntries.map(([dirpath]) => [dirpath, []]))
-    ),
-    filepath =>
-      createPair(
-        filepath,
-        put,
-        out,
-        ...(processorsEntries.find(([path$$1]) =>
+    new Map([[put, []]].concat(findEntries.map(([dirpath]) => [dirpath, []]))),
+    filepath => {
+      var _ref = findEntries.find(([path$$1]) =>
           filepath.includes(path$$1)
-        ) || [put])
-      )
+        ) || [put, {}],
+        _ref2 = slicedToArray(_ref, 2)
+
+      const dirpath = _ref2[0],
+        processors = _ref2[1]
+
+      return [dirpath, createEgg(filepath, put, out, processors)]
+    }
   ]
 }
 
-const createPair = (filepath, put, out, dirpath, processors = {}) => [
-  dirpath,
+const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
     filepath,
     path.join(out, filepath.split(put)[1]),
-    processors[path.extname(filepath).slice(1)]
+    processors[path.extname(filepath).slice(1)] || {}
   )
-]
 
-const Egg = (
-  filepath,
-  outpath,
-  { isStream = false, processor, options } = {}
-) => ({
+const Egg = (filepath, outpath, { isStream = false, processor, options }) => ({
   filepath,
   outpath,
   isStream,
@@ -179,82 +251,6 @@ const createArgs = (result, outpath, isProcessed) =>
         : result.filter(
             arg => Array.isArray(arg) && isString(arg[0]) && isProcessed(arg[1])
           )
-
-var asyncToGenerator = function(fn) {
-  return function() {
-    var gen = fn.apply(this, arguments)
-    return new Promise(function(resolve, reject) {
-      function step(key, arg) {
-        try {
-          var info = gen[key](arg)
-          var value = info.value
-        } catch (error) {
-          reject(error)
-          return
-        }
-
-        if (info.done) {
-          resolve(value)
-        } else {
-          return Promise.resolve(value).then(
-            function(value) {
-              step('next', value)
-            },
-            function(err) {
-              step('throw', err)
-            }
-          )
-        }
-      }
-
-      return step('next')
-    })
-  }
-}
-
-var slicedToArray = (function() {
-  function sliceIterator(arr, i) {
-    var _arr = []
-    var _n = true
-    var _d = false
-    var _e = undefined
-
-    try {
-      for (
-        var _i = arr[Symbol.iterator](), _s;
-        !(_n = (_s = _i.next()).done);
-        _n = true
-      ) {
-        _arr.push(_s.value)
-
-        if (i && _arr.length === i) break
-      }
-    } catch (err) {
-      _d = true
-      _e = err
-    } finally {
-      try {
-        if (!_n && _i['return']) _i['return']()
-      } finally {
-        if (_d) throw _e
-      }
-    }
-
-    return _arr
-  }
-
-  return function(arr, i) {
-    if (Array.isArray(arr)) {
-      return arr
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i)
-    } else {
-      throw new TypeError(
-        'Invalid attempt to destructure non-iterable instance'
-      )
-    }
-  }
-})()
 
 //
 
@@ -538,28 +534,32 @@ const recursiveZapDir = (() => {
     const dirpath = _entries$splice$[0],
       eggs = _entries$splice$[1]
 
-    const spinner = ora({ color: BASE_COLOR }).start(chalk.gray(`${dirpath}: `))
+    if (eggs.length) {
+      const spinner = ora({ color: BASE_COLOR }).start(
+        chalk.gray(`${dirpath}: `)
+      )
 
-    let countByDir = 0
+      let countByDir = 0
 
-    yield Promise.all(
-      eggs.map(function(egg) {
-        return zap(egg).then(function() {
-          return (spinner.text = chalk.gray(
-            `${dirpath}: ${countByDir++} / ${eggs.length}`
-          ))
+      yield Promise.all(
+        eggs.map(function(egg) {
+          return zap(egg).then(function() {
+            return (spinner.text = chalk.gray(
+              `${dirpath}: ${countByDir++} / ${eggs.length}`
+            ))
+          })
         })
-      })
-    )
-      .then(function() {
-        return spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`))
-      })
-      .catch(function(err) {
-        spinner.fail()
-        throw err
-      })
+      )
+        .then(function() {
+          return spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`))
+        })
+        .catch(function(err) {
+          spinner.fail()
+          throw err
+        })
 
-    count += countByDir
+      count += countByDir
+    }
 
     return entries.length ? recursiveZapDir(entries, count) : count
   })

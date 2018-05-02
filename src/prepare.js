@@ -13,44 +13,40 @@ export default (put: Path, out: Path, processors: any): [Map<Path, EggObj[]>, F2
     (processors: Processors | void)
     return [
       new Map([ [put, []] ]),
-      (filepath: Path) => createPair(filepath, put, out, put, processors)
+      (filepath: Path) => [put, createEgg(filepath, put, out, processors)]
     ]
   }
 
   (processors: [Path, Processors][])
 
-  const processorsEntries = processors.map(([dirpath,_processors]) => [
-    (dirpath === '/' || dirpath === './') ? put : join(put, dirpath),
+  const findEntries = processors.map(([dirpath,_processors]) => [
+    (dirpath === '/' || dirpath === './' || dirpath === '*')
+    ? put
+    : join(put, dirpath),
     _processors
   ])
 
   return [
     new Map([
       [put, []]
-    ].concat(processorsEntries.map(([dirpath]) =>
+    ].concat(findEntries.map(([dirpath]) =>
       [dirpath, []]
     ))),
-    (filepath: Path) => createPair(filepath, put, out, ...(
-      processorsEntries.find(([path]) => filepath.includes(path)) ||
-      [put]
-    ))
+    (filepath: Path) => {
+      const [dirpath, processors] = findEntries.find(([path]) => filepath.includes(path)) || [put, {}]
+      return [dirpath, createEgg(filepath, put, out, processors)]
+    }
   ]
 }
 
-const createPair = (filepath, put, out, dirpath, processors = {}) => [
-  dirpath,
+const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
     filepath,
     join(out, filepath.split(put)[1]),
-    processors[extname(filepath).slice(1)]
+    processors[extname(filepath).slice(1)] || {}
   )
-]
 
-const Egg = (
-  filepath,
-  outpath,
-  { isStream = false, processor, options } = {}
-): EggObj => ({
+const Egg = (filepath, outpath, { isStream = false, processor, options }): EggObj => ({
   filepath,
   outpath,
   isStream,

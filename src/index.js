@@ -72,22 +72,26 @@ const zapAllVerbose = (map) =>
   .then(count => console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`)))
 
 const recursiveZapDir = async (entries, count = 0) => {
+
   const [ dirpath, eggs ] = entries.splice(0, 1)[0]
-  const spinner = ora({ color: BASE_COLOR }).start(chalk.gray(`${dirpath}: `))
 
-  let countByDir = 0
+  if (eggs.length) {
+    const spinner = ora({ color: BASE_COLOR }).start(chalk.gray(`${dirpath}: `))
 
-  await Promise
-  .all(eggs.map(
-    egg => zap(egg).then(() => spinner.text = chalk.gray(`${dirpath}: ${countByDir++} / ${eggs.length}`))
-  ))
-  .then(() => spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`)))
-  .catch(err => {
-    spinner.fail()
-    throw err
-  })
+    let countByDir = 0
 
-  count += countByDir
+    await Promise
+    .all(eggs.map(
+      egg => zap(egg).then(() => spinner.text = chalk.gray(`${dirpath}: ${countByDir++} / ${eggs.length}`))
+    ))
+    .then(() => spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`)))
+    .catch(err => {
+      spinner.fail()
+      throw err
+    })
+
+    count += countByDir
+  }
 
   return entries.length ? recursiveZapDir(entries, count) : count
 }
