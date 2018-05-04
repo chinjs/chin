@@ -140,37 +140,35 @@ export default [
 ## Plugin
 Example:
 ```js
-export const pluginAsExt = (opts) => {
+export const plugin = (opts) => {
   const isStream = true
   const options = {}
   const processor = (pipe, util) => {}
   return { isStream, options, processor }
 }
 
-export const pluginAsProcessor = (opts) => {
-  return (data, util) => {}
-}
-
 export const pluginWithHook = (opts) => {
-  const ext = pluginAsProcessor({})
-  const beforeHook = () => {}
-  const afterHook = () => {}
-  return { ext, beforeHook, afterHook }
+  const isStream = false
+  const options = {}
+  const processor = (data, util) => {}
+  
+  const before = () => {}
+  const after = () => {}
+  return { isStream, options, processor, before, after }
 }
 ```
 ```js
-import { pluginAsExt, pluginAsProcessor, pluginWithHook } from './plugins'
+import { plugin, pluginWithHook } from './plugins'
 
-const pluginResult = pluginWithHook({})
+const extWithHook = pluginWithHook()
 
 export default {
   processors: {
-    [ext0]: pluginAsExt({}),
-    [ext1]: { processor: pluginAsProcessor({}) },
-    [ext2]: pluginResult.ext
+    [ext0]: plugin(),
+    [ext1]: extWithHook
   },
-  before: () => pluginResult.beforeHook(),
-  after: () => pluginResult.afterHook()
+  before: () => extWithHook.before(),
+  after: () => extWithHook.after()
 }
 ```
 
