@@ -1,6 +1,6 @@
 {
   "name": "chin",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "repository": "kthjm/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
@@ -8,6 +8,7 @@
   "bin": "bin/chin.js",
   "description": "build-tool able to write plugin easily",
   "keywords": [
+    "chin",
     "build tool",
     "builder",
     "assets",

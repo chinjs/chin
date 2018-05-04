@@ -154,18 +154,20 @@ export const pluginWithHook = (opts) => {
   
   const before = () => {}
   const after = () => {}
+  
   return { isStream, options, processor, before, after }
 }
 ```
 ```js
 import { plugin, pluginWithHook } from './plugins'
 
+const ext = plugin()
 const extWithHook = pluginWithHook()
 
 export default {
   processors: {
-    [ext0]: plugin(),
-    [ext1]: extWithHook
+    [ext_0]: ext,
+    [ext_1]: extWithHook
   },
   before: () => extWithHook.before(),
   after: () => extWithHook.after()
