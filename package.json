@@ -1,11 +1,11 @@
 {
   "name": "chin",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "repository": "kthjm/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
-  "bin": "bin/chin.js",
+  "bin": "bin/index.js",
   "description": "build-tool able to write plugin easily",
   "keywords": [
     "chin",

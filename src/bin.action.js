@@ -1,11 +1,11 @@
-const consola = require('consola')
-const rooquire = require('app-root-path').require
-const { remove } = require('fs-extra')
+import consola from 'consola'
+import { require as rooquire } from 'app-root-path'
+import { remove } from 'fs-extra'
 
-const PUT = 'assets'
-const OUT = 'public'
-const CONFIG1 = 'chin.config.js'
-const CONFIG2 = '.chin/index.js'
+export const PUT = 'assets'
+export const OUT = 'public'
+export const CONFIG1 = 'chin.config.js'
+export const CONFIG2 = '.chin/index.js'
 
 const requireModules = (requireValue) =>
   requireValue
@@ -33,33 +33,33 @@ const getConfig = (configValue) => {
   return 'default' in config ? config['default'] : config
 }
 
-const actionFrame = (program, action) => Promise.resolve()
-.then(() =>
-  program.require &&
-  requireModules(program.require)
-)
-.then(() =>
-  program.config
-    ? getConfig(program.config)
-    : consola.info('no config')
-)
-.then((config = {}) =>
-  Array.isArray(config)
-    ? config
-    : [config]
-)
-.then(configs =>
-  recursiveSpliceAction(
-    program,
-    configs,
-    action
+export default (program, action) => Promise.resolve()
+  .then(() =>
+    program.require &&
+    requireModules(program.require)
   )
-)
-.then(() => console.log(''))
-.catch((err) => {
-  consola.error(err)
-  process.exit(1)
-})
+  .then(() =>
+    program.config
+      ? getConfig(program.config)
+      : consola.info('no config')
+  )
+  .then((config = {}) =>
+    Array.isArray(config)
+      ? config
+      : [config]
+  )
+  .then(configs =>
+    recursiveSpliceAction(
+      program,
+      configs,
+      action
+    )
+  )
+  .then(() => console.log(''))
+  .catch((err) => {
+    consola.error(err)
+    process.exit(1)
+  })
 
 const recursiveSpliceAction = (program, configs, action, isCutline) => {
 
@@ -118,5 +118,3 @@ chin@${version}
 put: ${put}
 out: ${out}
 `)
-
-module.exports = { actionFrame, PUT, OUT, CONFIG1, CONFIG2 }

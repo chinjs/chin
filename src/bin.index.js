@@ -1,8 +1,6 @@
-#!/usr/bin/env node
-const program = require('commander')
-const { version } = require('../package.json')
-const { chin, watch } = require('..')
-const { actionFrame, PUT, OUT, CONFIG1, CONFIG2 } = require('./action.js')
+import program from 'commander'
+import { chin, watch } from '..'
+import action, { PUT, OUT, CONFIG1, CONFIG2 } from './bin.action.js'
 
 program
   .option('-c, --config [path]', `[default: ${CONFIG1} || ${CONFIG2}]`)
@@ -11,7 +9,7 @@ program
   .option('-r, --require <name..>', 'splited by ","')
   .option('--clean', 'remove "out" before')
   .option('-q, --quiet')
-  .version(version, '-v, --version')
+  .version(require('../package.json').version, '-v, --version')
   .on('--help', () => console.log(
 `
   Example:
@@ -29,10 +27,10 @@ program
   .option('--clean', 'remove "out" before')
   .option('-q, --quiet')
   .on('--help', () => console.log(``))
-  .action(() => actionFrame(program, watch))
+  .action(() => action(program, watch))
 
 program.parse(process.argv)
 
 program.args.length === 0
-  ? actionFrame(program, chin)
+  ? action(program, chin)
   : program.args[0].constructor !== program.Command && program.help()
