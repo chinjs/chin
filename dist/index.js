@@ -446,6 +446,8 @@ const BASE_COLOR = 'yellow'
 const init = (config = {}) => {
   assert(config.put && typeof config.put === 'string', '')
   assert(config.out && typeof config.out === 'string', '')
+  config.put = path.normalize(config.put)
+  config.out = path.normalize(config.out)
   return config
 }
 

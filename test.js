@@ -6,8 +6,8 @@ import { chin, watch } from './src'
 
 const { assign } = Object
 
-const put = 'put'
-const out = 'out'
+const put = 'dir/put'
+const out = 'dir/out'
 const tree = {
   'node_modules': mock.symlink({ path: 'node_modules' }),
   [put]: {

@@ -4,7 +4,7 @@ import recursiveReaddir from 'recursive-readdir'
 import ora from 'ora'
 import figures from 'figures'
 import chalk from 'chalk'
-import { join } from 'path'
+import { normalize, join } from 'path'
 import prepare from './prepare.js'
 import zap from './zap.js'
 import watchprocess from './watch.js'
@@ -19,6 +19,8 @@ const BASE_COLOR = 'yellow'
 const init = (config = {}) => {
   assert(config.put && typeof config.put === 'string', '')
   assert(config.out && typeof config.out === 'string', '')
+  config.put = normalize(config.put)
+  config.out = normalize(config.out)
   return config
 }
 
