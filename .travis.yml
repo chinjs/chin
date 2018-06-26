@@ -14,5 +14,5 @@ deploy:
     secure: dODlpzcagPkKRrWvjy5buDAx9CKLHZVehb4uAEvFE7Fz28Oow46SO6OjLCR953BOqeGf7/h65jM7Ko6TWhBUPXSnM1l5xYOQVqpx9dTB8CHJuSrOJ5gXCoDHw6sVxel+guYINVzj9C0pX7JwxZkVIIpeHQhCaSbF478DQ6zaJIsAphBV1j+Hj+O0EptM/pGsGVXmxIFblKBUAO5YfHgsgQSy0i/n7uTR3VzoIn9npeCXzIC8s2p+9W0FApm7asRpA3eOhJpwSVodDdpNqNult96QYzDMiBPM6+sIi2Qy0n2yc/woBY0HhigHnqlLJ2nsvOdF6yvXQpc8G627cqquoJhjKQsaXVDLP8dYkRfZOdHlSoolwkPZNfncmZCPI1lOnvNfNNkXOaURcLYUSRN/Cny1t9mmiF876ArC2mLKKUle59fF/RPyVBrT2444iVxPr5EIfvYC60l4FKLz69Uqq0Zaq1OAMqNpxz9ddq5zxXHqH2fyRJa/HHKep1jsDioZUsZyc4+F8wCxmCJ/ccAy/uptJ9Ke9HqMK/upC3ofZ2zwvOJjPt73JeAW26QrYPOQyWZtkdxoH1P2kavnr9An4tvcaC54L+jRCzZpauxA7o22VyM9B6bayoPEj/SEZJzgv4G1rgBitgoXJshr+t/MVcy6cylAcN/mrdOL3GUbFqo=
   on:
     tags: true
-    repo: kthjm/chin
+    repo: chinjs/chin
     branch: publish
