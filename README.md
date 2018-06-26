@@ -1,12 +1,12 @@
 # chin
 
-[![npm](https://img.shields.io/npm/v/chin.svg?style=flat-square)](https://www.npmjs.com/package/chin)
-[![npm](https://img.shields.io/npm/dm/chin.svg?style=flat-square)](https://www.npmjs.com/package/chin)
-[![Build Status](https://img.shields.io/travis/kthjm/chin.svg?style=flat-square)](https://travis-ci.org/kthjm/chin)
-[![Coverage Status](https://img.shields.io/codecov/c/github/kthjm/chin.svg?style=flat-square)](https://codecov.io/github/kthjm/chin)
+[![npm](https://img.shields.io/npm/v/chin.svg?longCache=true&style=flat-square)](https://www.npmjs.com/package/chin)
+[![npm](https://img.shields.io/npm/dm/chin.svg?longCache=true&style=flat-square)](https://www.npmjs.com/package/chin)
+[![Build Status](https://img.shields.io/travis/chinjs/chin.svg?longCache=true&style=flat-square)](https://travis-ci.org/chinjs/chin)
+[![Coverage Status](https://img.shields.io/codecov/c/github/chinjs/chin.svg?longCache=true&style=flat-square)](https://codecov.io/github/chinjs/chin)
 
-![](https://i.gyazo.com/b3ed81be202ee18b88f2e5058135f6dd.jpg)
-> To use a microwave is called "chin" in Japan because the completion sound was heard like that.
+<!-- ![](https://i.gyazo.com/b3ed81be202ee18b88f2e5058135f6dd.jpg)
+> To use a microwave is called "chin" in Japan because the completion sound was heard like that.😺 -->
 
 Let's build files by writing plugin easily.
 
@@ -42,6 +42,7 @@ yarn add -D chin
 ## Config
 ```js
 const config = {
+
   /* core */
   put: dirpath,
   out: dirpath,
@@ -58,6 +59,7 @@ const config = {
 
   /* used in `watch` */
   watch?: ChokidarOpts
+
 }
 
 export default config | config[]
@@ -151,10 +153,10 @@ export const pluginWithHook = (opts) => {
   const isStream = false
   const options = {}
   const processor = (data, util) => {}
-  
+
   const before = () => {}
   const after = () => {}
-  
+
   return { isStream, options, processor, before, after }
 }
 ```

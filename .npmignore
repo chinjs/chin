@@ -5,6 +5,7 @@ src/
 .gitignore
 .travis.yml
 codecov.yml
+rogo.svg
 rollup.config.js
 test.js
 types.js

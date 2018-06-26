@@ -1,7 +1,7 @@
 {
   "name": "chin",
-  "version": "3.0.6",
-  "repository": "kthjm/chin",
+  "version": "3.0.7",
+  "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
