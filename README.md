@@ -5,15 +5,91 @@
 [![Build Status](https://img.shields.io/travis/chinjs/chin.svg?longCache=true&style=flat-square)](https://travis-ci.org/chinjs/chin)
 [![Coverage Status](https://img.shields.io/codecov/c/github/chinjs/chin.svg?longCache=true&style=flat-square)](https://codecov.io/github/chinjs/chin)
 
-<!-- ![](https://i.gyazo.com/b3ed81be202ee18b88f2e5058135f6dd.jpg)
-> To use a microwave is called "chin" in Japan because the completion sound was heard like that.😺 -->
+Simple build tool that matches and processes files with extension instead of regexp.
 
-Let's build files by writing plugin easily.
+## Usage
+```js
+const imagemin = require('chin-plugin-imagemin')
 
-## Installation
-```shell
-yarn add -D chin
+const img2min = imagemin()
+
+module.exports = {
+  put: 'assets',
+  out: 'public',
+  processors: {
+    png: img2min,
+    jpg: img2min
+  }
+}
 ```
+```shell
+yarn add -D chin chin-plugin-imagemin
+yarn chin -c
+```
+
+    package.json
+    chin.config.js
+    assets
+    ├─ sitemap.xml
+    |─ robots.txt
+    └─ images
+       ├─ foo.png
+       └─ bar.jpg
+    public
+    ├─ sitemap.xml // copied
+    |─ robots.txt  // copied
+    └─ images
+       ├─ foo.png  // optimized
+       └─ bar.jpg  // optimized
+
+
+## Config
+
+It's called `chin.config.js` or `.chin/index.js` in the root directory of your project typically. You can export config as an array.
+
+#### put/out
+directory path. `put` => `out`
+
+#### processors
+
+plugins can be found  [here](https://yarnpkg.com/en/packages?q=%2A&p=1&keywords%5B0%5D=chin-plugin).
+
+```js
+const processors = { [ext]: plugin() }
+```
+`.` is unnecessary at `[ext]`. Unmatch files is not ignored but copied.
+
+`processors` can be an array:
+```js
+const processors = [ path, { [ext]: plugin() } ][]
+```
+Files are matched by `processors.find()`, so the index express priority and not be fallbacked.
+
+example:
+```js
+const processors = [
+  ['dir1/file.ext', { ext }],  // [put]/dir1/file.ext => [out]/dir1/file.ext
+  ['dir1/dir2', { ext }],      // [put]/dir1/dir2/**  => [out]/dir1/dir2/**
+  ['dir1/', { ext }],          // [put]/dir1/**       => [out]/dir1/**
+  ['*', { ext }]               // [put]/**            => [out]/**
+]
+```
+
+#### ignored
+`Matcher[]`. Passed to [recursive-readdir](https://github.com/jergason/recursive-readdir).
+
+#### clean
+`boolean`. [Remove](https://github.com/jprichardson/node-fs-extra/blob/master/docs/remove.md) `config.out` before process.
+
+#### quiet
+`boolean`. Whether log or not.
+
+#### before/after
+Hook function.
+
+#### watch
+`chin watch` use as [chokidar](https://github.com/paulmillr/chokidar) options. If `watch.ignored` is void, `ignored` fallbacked.
+
 ## CLI
 ```shell
 
@@ -39,142 +115,49 @@ yarn add -D chin
     chin -c -r babel-register,dotenv/config
 
 ```
-## Config
+
+## Plugin
+
+Plugin can also be written by yourself easily.
+
 ```js
-const config = {
-
-  /* core */
-  put: dirpath,
-  out: dirpath,
-  ignored?: Matcher[],
-  processors?: processors | [path, processors][],
-
-  /* optional */
-  clean?: boolean,
-  quiet?: boolean,
-
-  /* hooks */
-  before?: Function,
-  after?: Function,
-
-  /* used in `watch` */
-  watch?: ChokidarOpts
-
-}
-
-export default config | config[]
-```
-
-#### `put/out: dirpath`
-directory path. (`put => out`)
-
-#### `ignored: Matcher[]`
-Used for [recursive-readdir](https://github.com/jergason/recursive-readdir) (and [chokidar](https://github.com/paulmillr/chokidar)).
-
-#### `clean: boolean`
-[remove](https://github.com/jprichardson/node-fs-extra/blob/master/docs/remove.md) `config.out` before process.
-
-#### `quiet: boolean`
-Whether log or not.
-
-#### `before/after: Function`
-Hook function.
-
-#### `watch: {}`
-[chokidar](https://github.com/paulmillr/chokidar)'s options. If `config.watch.ignored` is void, `config.ignored` used.
-
-### `processors: {[ext]}`
-```js
-type Processors = {
-  [extension]: {
-    isStream?: boolean,
-    options?: ReadFileOpts | CreateReadStreamOpts,
-    processor?: processor | streamProcessor
-  }
+type Plugin = (opts: any) => {
+  isStream: boolean,
+  options: ReadFileOpts | CreateReadStreamOpts,
+  processor: processor | streamProcessor,
+  [custom]: any
 }
 ```
-`.` is unnecessary at `[extension]` (not `.txt` but `txt`). Files that match no processor will be just copied.
-
-`isStream` switches read-file function that `options` belongs.
+`isStream` switches the following read-file function.
 - [`readFile`](https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback)
 - [`createReadStream`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)
 
-So `processor` has two type. The outpath can be edited like `[outpath, result]` or `[outpath, result][]`.
+So the type of both `processor` and `options` is determined by `isStream`.
+
+In `processor`, the outpath can be edited like `[outpath, result]` or `[outpath, result][]`.
 
 ```js
 const processor = (data, util) =>
-  dataTransformed |
-  [outpath, dataTransformed] |
-  [outpath, dataTransformed][]
+  processed |
+  [outpath, processed] |
+  [outpath, processed][]
 
 const streamProcessor = (pipe, util) =>
-  pipe(streamDuplex) |
-  [outpath, pipe(streamDuplex)] |
-  [outpath, pipe(streamDuplex)][]
+  pipe(stream) |
+  [outpath, pipe(stream)] |
+  [outpath, pipe(stream)][]
 ```
-#### `util: {}`
-- `on`: `"finish"` is emitted after write.
-- `out`: [parsed](https://nodejs.org/api/path.html#path_path_parse_path) default outpath.
 
-### Array in Config
-
-Both `config` and `config.processors` can set as array.
-
-In `config.processors` that set as `[path, processors][]`, Files are matched by `config.processors.find()`, so the index used as priority, and not be fallbacked.
-
+### util
+#### out
+[parsed](https://nodejs.org/api/path.html#path_path_parse_path) outpath without `base` for assignable.
 ```js
-export default [
-  {
-    put: 'assets',
-    out: 'public',
-    processors: [
-      ['dir1/dir2', { [ext]: {} }], // assets/dir1/dir2/** => public/dir1/dir2/**
-      ['dir1/file1.ext', { [ext]: {} }], // assets/dir1/file1.ext => public/dir1/file1.ext
-      ['dir1/', { [ext]: {} }], // assets/dir1/** => public/dir1/**
-      ['*', { [ext]: {} }] // assets/** => public/**
-    ]
-  },
-  {..},
-  {..}
-]
+const { format } = require('path')
+const outpath = format(Object.assign(util.out, { ext: '.other' }))
 ```
 
-## Plugin
-Example:
-```js
-export const plugin = (opts) => {
-  const isStream = true
-  const options = {}
-  const processor = (pipe, util) => {}
-  return { isStream, options, processor }
-}
-
-export const pluginWithHook = (opts) => {
-  const isStream = false
-  const options = {}
-  const processor = (data, util) => {}
-
-  const before = () => {}
-  const after = () => {}
-
-  return { isStream, options, processor, before, after }
-}
-```
-```js
-import { plugin, pluginWithHook } from './plugins'
-
-const ext = plugin()
-const extWithHook = pluginWithHook()
-
-export default {
-  processors: {
-    [ext_0]: ext,
-    [ext_1]: extWithHook
-  },
-  before: () => extWithHook.before(),
-  after: () => extWithHook.after()
-}
-```
+#### on
+`"finish"` is emitted after write.
 
 ## License
 MIT (http://opensource.org/licenses/MIT)

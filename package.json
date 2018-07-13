@@ -1,12 +1,12 @@
 {
   "name": "chin",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
-  "main": "dist/index.js",
-  "bin": "bin/index.js",
-  "description": "build-tool able to write plugin easily",
+  "main": "main.js",
+  "bin": "chin.js",
+  "description": "Simple build tool that matches and processes files with extension instead of regexp.",
   "keywords": [
     "chin",
     "build tool",
@@ -24,7 +24,6 @@
   "scripts": {
     "pretest": "flow",
     "test": "cross-env BABEL_ENV=TEST nyc mocha",
-    "prebuild": "yarn test",
     "build": "cross-env BABEL_ENV=BUILD rollup -c",
     "coverage": "nyc report --reporter=lcov && codecov"
   },

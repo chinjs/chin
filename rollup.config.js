@@ -8,7 +8,7 @@ const shebang = '#!/usr/bin/env node'
 export default [
   {
     input: 'src/index.js',
-    output: { format: 'cjs', file: 'dist/index.js', exports: 'named' },
+    output: { format: 'cjs', file: 'main.js', exports: 'named' },
     plugins: [
       flow({ pretty: true }),
       babel({ exclude: 'node_modules/**' }),
@@ -25,8 +25,7 @@ export default [
   },
   {
     input: 'src/bin.index.js',
-    output: { format: 'cjs', file: 'bin/index.js' },
-    banner: shebang,
+    output: { format: 'cjs', file: 'chin.js', banner: shebang },
     external: ['..'],
     plugins: [
       babel({ exclude: 'node_modules/**' }),
