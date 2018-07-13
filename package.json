@@ -1,11 +1,11 @@
 {
   "name": "chin",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
-  "main": "main.js",
-  "bin": "chin.js",
+  "main": "dist/index.js",
+  "bin": "bin/chin.js",
   "description": "Simple build tool that matches and processes files with extension instead of regexp.",
   "keywords": [
     "chin",
