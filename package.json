@@ -4,8 +4,8 @@
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
-  "main": "dist/index.js",
-  "bin": "bin/index.js",
+  "main": "main.js",
+  "bin": "chin.js",
   "description": "Simple build tool that matches and processes files with extension instead of regexp.",
   "keywords": [
     "chin",
