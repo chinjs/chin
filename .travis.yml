@@ -7,7 +7,6 @@ cache:
   - node_modules
 after_success:
 - yarn coverage
-before_deploy: yarn build
 deploy:
   provider: npm
   email: toxictoxer@gmail.com
