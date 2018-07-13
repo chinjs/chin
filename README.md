@@ -51,19 +51,21 @@ It's called `chin.config.js` or `.chin/index.js` in the root directory of your p
 directory path. `put` => `out`
 
 #### processors
+
+plugins can be found  [here](https://yarnpkg.com/en/packages?q=%2A&p=1&keywords%5B0%5D=chin-plugin).
+
 ```js
 const processors = { [ext]: plugin() }
 ```
 `.` is unnecessary at `[ext]`. Unmatch files is not ignored but copied.
 
-And can be an array:
+`processors` can be an array:
 ```js
 const processors = [ path, { [ext]: plugin() } ][]
 ```
 Files are matched by `processors.find()`, so the index express priority and not be fallbacked.
 
 example:
-<!-- example: -->
 ```js
 const processors = [
   ['dir1/file.ext', { ext }],  // [put]/dir1/file.ext => [out]/dir1/file.ext
@@ -115,13 +117,14 @@ Hook function.
 ```
 
 ## Plugin
-```js
-type Plugin = (opts: any) => Extension
 
-type Extension = {
-  isStream?: boolean,
-  options?: ReadFileOpts | CreateReadStreamOpts,
-  processor?: processor | streamProcessor,
+Plugin can also be written by yourself easily.
+
+```js
+type Plugin = (opts: any) => {
+  isStream: boolean,
+  options: ReadFileOpts | CreateReadStreamOpts,
+  processor: processor | streamProcessor,
   [custom]: any
 }
 ```

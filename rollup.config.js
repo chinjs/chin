@@ -25,8 +25,7 @@ export default [
   },
   {
     input: 'src/bin.index.js',
-    output: { format: 'cjs', file: 'bin/index.js' },
-    banner: shebang,
+    output: { format: 'cjs', file: 'bin/index.js', banner: shebang },
     external: ['..'],
     plugins: [
       babel({ exclude: 'node_modules/**' }),

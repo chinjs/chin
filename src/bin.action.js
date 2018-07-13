@@ -12,25 +12,19 @@ const requireModules = (requireValue) =>
   .split(',')
   .forEach(moduleName => require(moduleName))
 
-const isThrow = (message) => !message.includes('Cannot find module')
-
 const getConfig = (configValue) => {
   let config
   if (typeof configValue === 'string') {
     config = rooquire(configValue)
   } else {
-    try {
-      config = rooquire(CONFIG1)
-    } catch (e1) {
-      if (isThrow(e1.message)) throw e1
-      try {
-        config = rooquire(CONFIG2)
-      } catch (e2) {
-        throw isThrow(e2.message) ? e2 : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`)
-      }
+    try { config = rooquire(CONFIG1) }
+    catch (e1) {
+      if (!e1.message.includes(CONFIG1)) throw e1
+      try { config = rooquire(CONFIG2) }
+      catch (e2) { throw !e2.message.includes(CONFIG2) ? e2 : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`) }
     }
   }
-  return 'default' in config ? config['default'] : config
+  return config
 }
 
 export default (program, action) => Promise.resolve()
