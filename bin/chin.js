@@ -21,6 +21,7 @@ const requireModules = requireValue =>
 
 const getConfig = configValue => {
   let config
+
   if (typeof configValue === 'string') {
     config = appRootPath.require(configValue)
   } else {
@@ -37,7 +38,8 @@ const getConfig = configValue => {
       }
     }
   }
-  return config
+
+  return 'default' in config ? config['default'] : config
 }
 
 var action = (program$$1, action) =>

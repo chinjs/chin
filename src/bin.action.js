@@ -14,6 +14,7 @@ const requireModules = (requireValue) =>
 
 const getConfig = (configValue) => {
   let config
+  
   if (typeof configValue === 'string') {
     config = rooquire(configValue)
   } else {
@@ -24,7 +25,8 @@ const getConfig = (configValue) => {
       catch (e2) { throw !e2.message.includes(CONFIG2) ? e2 : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`) }
     }
   }
-  return config
+
+  return 'default' in config ? config['default'] : config
 }
 
 export default (program, action) => Promise.resolve()
