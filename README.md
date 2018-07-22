@@ -31,13 +31,13 @@ yarn chin -c
     chin.config.js
     assets
     ├─ sitemap.xml
-    |─ robots.txt
+    ├─ robots.txt
     └─ images
        ├─ foo.png
        └─ bar.jpg
     public
     ├─ sitemap.xml // copied
-    |─ robots.txt  // copied
+    ├─ robots.txt  // copied
     └─ images
        ├─ foo.png  // optimized
        └─ bar.jpg  // optimized
