@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "bin": "bin/chin.js",
-  "description": "Simple build tool that matches and processes files with extension instead of regexp.",
+  "description": "Simple build tool that matches and processes files by extension instead of regexp.",
   "keywords": [
     "chin",
     "build tool",
