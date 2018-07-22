@@ -9,7 +9,7 @@ import {
   type F2TFn
 } from '../types.js'
 
-const createMap = (put, ignored, f2t, map) =>
+const recursiveSettingMap = (put, ignored, f2t, map) =>
   recursiveReaddir(put, ignored)
   .then(filepaths => filepaths.map(f2t).forEach(([ dirpath, egg ]) => {
     const eggs: any = map.get(dirpath);(eggs: EggObj[])
@@ -47,7 +47,8 @@ export default (
       _processors
     ])
     
-    initialMap = new Map([ [put, []] ].concat(findEntries.map(([ dirpath ]) => [dirpath, []] )))
+    initialMap = new Map(findEntries.map(([ dirpath ]) => [dirpath, []] ))
+    !initialMap.has(put) && initialMap.set(put, [])
     
     f2t = (filepath: Path) => {
       const [dirpath, processors] = findEntries.find(([ dirpath ]) => filepath.includes(dirpath)) || [put, {}]
@@ -55,7 +56,7 @@ export default (
     }
   }
   
-  return createMap(put, ignored, f2t, initialMap).then(map => ({ map, f2t }))
+  return recursiveSettingMap(put, ignored, f2t, initialMap).then(map => ({ map, f2t }))
 }
 
 const createEgg = (filepath, put, out, processors = {}) =>

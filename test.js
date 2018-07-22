@@ -156,6 +156,34 @@ describe('chin', () => {
     }))
 
   })
+  
+  describe('delay with message', () => {
+    
+    const test = (txt) => () => 
+      chin({
+        put,
+        out,
+        verbose: true,
+        processors: [
+          ['dir1', { txt }],
+          ['dir2', { txt }]
+        ]
+      })
+      
+    it('success', test({
+      processor: (data, { msg }) =>
+        new Promise(resolve => setTimeout(resolve, 300))
+        .then(() => msg('any message'))
+        .then(() => data)
+    }))
+    
+    it('fail', test({
+      processor: (data) =>
+        new Promise(resolve => setTimeout(resolve, 300))
+        .then(() => { throw new Error('err message') })
+    }))
+    
+  })
 
 })
 

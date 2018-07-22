@@ -1,16 +1,16 @@
 // @flow
 import assert from 'assert'
-import ora from 'ora'
 import figures from 'figures'
 import chalk from 'chalk'
-import consola from 'consola'
 import { normalize, join } from 'path'
 import prepare from './prepare.js'
 import zap from './zap.js'
 import watchprocess from './watch.js'
 import { type Config, type Watcher } from '../types.js'
 
-const BASE_COLOR = 'yellow'
+const BASE_COLOR = 'cyan'
+const PRE_SUCC = chalk.green(figures.tick)
+const PRE_FAIL = chalk.red(figures.cross)
 
 const init = (config = {}) => {
   assert(config.put && typeof config.put === 'string', '')
@@ -44,24 +44,25 @@ const zapAllQuiet = (map) =>
   Promise.all([].concat(...[...map.values()]).map(zap))
 
 const zapAllVerbose = (map) =>
-  recursiveZapDir([].concat([...map.entries()]))
-  .then(count => console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`)))
+  recursiveZapDir([].concat([...map.entries()])).then(count =>
+    console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`))
+  )
 
 const recursiveZapDir = async (entries, count = 0) => {
 
   const [ dirpath, eggs ] = entries.splice(0, 1)[0]
 
   if (eggs.length) {
-    const spinner = ora({ color: BASE_COLOR }).start(chalk.gray(`${dirpath}: `))
-
+    console.log(`${dirpath}: ${chalk[BASE_COLOR](`${eggs.length} files`)}`)
+    
     let countByDir = 0
 
     await Promise.all(eggs.map(egg =>
       zap(egg)
-      .then(() => spinner.text = chalk.gray(`${dirpath}: ${countByDir++} / ${eggs.length}`))
-      .catch(({ message }) => consola.error(message))
+      .then(msg => console.log(`${PRE_SUCC} ${chalk.gray(`${egg.filepath}${msg ? `: ${msg}` : ''}`)}`))
+      .then(() => countByDir++)
+      .catch(err => console.log(`${PRE_FAIL} ${chalk.gray(`${egg.filepath}: ${err.message}`)}`))
     ))
-    .then(() => spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`)))
 
     count += countByDir
   }
