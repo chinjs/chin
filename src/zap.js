@@ -27,14 +27,14 @@ export default ({ filepath, outpath, isStream, options, processor }: {
   isStream: boolean,
   options: any,
   processor: any
-}): Promise<boolean> => {
+}): Promise<void | string> => {
 
   filepath = path.resolve(filepath)
   outpath = path.resolve(outpath)
 
   const ee = new EventEmitter()
   const on = (...arg) => ee.on(...arg)
-  
+
   let message
   const msg = (_message) => message = _message
 

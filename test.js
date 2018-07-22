@@ -156,10 +156,10 @@ describe('chin', () => {
     }))
 
   })
-  
+
   describe('delay with message', () => {
-    
-    const test = (txt) => () => 
+
+    const test = (txt) => () =>
       chin({
         put,
         out,
@@ -169,22 +169,22 @@ describe('chin', () => {
           ['dir2', { txt }]
         ]
       })
-      
+
     it('success', test({
       processor: (data, { msg }) =>
-        new Promise(resolve => setTimeout(resolve, 300))
+        new Promise(resolve => setTimeout(resolve, 800))
         .then(() => msg('any message'))
         .then(() => data)
     }))
-    
+
     it('fail', test({
       processor: (data) =>
-        new Promise(resolve => setTimeout(resolve, 300))
-        .then(() => assert.equal(process.env.CHIN_PUT, put))
-        .then(() => assert.equal(process.env.CHIN_OUT, out))
+        new Promise(resolve => setTimeout(resolve, 800))
+        .then(() => assert.ok(process.env.CHIN_PUT))
+        .then(() => assert.ok(process.env.CHIN_OUT))
         .then(() => { throw new Error('err message') })
     }))
-    
+
   })
 
 })

@@ -26,7 +26,7 @@ const chin = async (config: Config): Promise<void> => {
   const { put, out, ignored, processors, verbose } = init(config)
   const { map } = await prepare(put, out, processors, ignored)
   await zapAll(map, verbose)
-  return undefined
+  return
 }
 
 const watch = async (config: Config): Promise<Watcher> => {
@@ -56,16 +56,13 @@ const recursiveZapDir = async (entries, count = 0) => {
 
   if (eggs.length) {
     console.log(`${dirpath}: ${chalk[BASE_COLOR](`${eggs.length} files`)}`)
-    
     let countByDir = 0
-
     await Promise.all(eggs.map(egg =>
       zap(egg)
       .then(msg => console.log(`${PRE_SUCC} ${chalk.gray(`${egg.filepath}${msg ? `: ${msg}` : ''}`)}`))
       .then(() => countByDir++)
       .catch(err => console.log(`${PRE_FAIL} ${chalk.gray(`${egg.filepath}: ${err.message}`)}`))
     ))
-
     count += countByDir
   }
 

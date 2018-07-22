@@ -164,5 +164,9 @@ util.msg('any message')
 #### on
 `"finish"` is emitted after write.
 
+### env
+- `process.env.CHIN_PUT`
+- `process.env.CHIN_OUT`
+
 ## License
 MIT (http://opensource.org/licenses/MIT)
