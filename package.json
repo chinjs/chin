@@ -22,7 +22,7 @@
     "instrument": false
   },
   "scripts": {
-    "//pretest": "flow",
+    "pretest": "flow",
     "test": "cross-env BABEL_ENV=TEST nyc mocha",
     "build": "cross-env BABEL_ENV=BUILD rollup -c",
     "coverage": "nyc report --reporter=lcov && codecov"
