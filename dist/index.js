@@ -238,25 +238,25 @@ const streamProcess = ({ filepath, options, processor, on, msg, outpath }) =>
       .then(result => createArgs(result, outpath, isStreamResult))
       .then(
         args =>
-          !Array.isArray(args)
-            ? resolve()
-            : Promise.all(
-                args.map(([outpath, piped]) =>
-                  fsExtra
-                    .ensureDir(
-                      path__default.resolve(path__default.dirname(outpath))
-                    )
-                    .then(
-                      () =>
-                        new Promise(resolve => {
-                          const writable = fsExtra.createWriteStream(outpath)
-                          writable.on('error', reject)
-                          writable.on('finish', resolve)
-                          piped.pipe(writable)
-                        })
-                    )
+          Array.isArray(args) &&
+          Promise.all(
+            args.map(([outpath, stream]) => {
+              stream.on('error', reject)
+              return fsExtra
+                .ensureDir(
+                  path__default.resolve(path__default.dirname(outpath))
                 )
-              )
+                .then(
+                  () =>
+                    new Promise(resolve => {
+                      const writable = fsExtra.createWriteStream(outpath)
+                      writable.on('error', reject)
+                      writable.on('finish', resolve)
+                      stream.pipe(writable)
+                    })
+                )
+            })
+          )
       )
       .then(resolve)
   })
