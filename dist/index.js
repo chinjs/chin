@@ -6,6 +6,7 @@ function _interopDefault(ex) {
   return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
 }
 
+var recursiveReaddir = _interopDefault(require('recursive-readdir'))
 var path = require('path')
 var path__default = _interopDefault(path)
 var EventEmitter = _interopDefault(require('events'))
@@ -13,8 +14,6 @@ var fsExtra = require('fs-extra')
 var chokidar = _interopDefault(require('chokidar'))
 var chalk = _interopDefault(require('chalk'))
 var assert = _interopDefault(require('assert'))
-var recursiveReaddir = _interopDefault(require('recursive-readdir'))
-var ora = _interopDefault(require('ora'))
 var figures = _interopDefault(require('figures'))
 
 //
@@ -97,36 +96,51 @@ var slicedToArray = (function() {
 
 //
 
-var prepare = (put, out, processors) => {
+const PUT_EXPRESSION = ['/', './', '*']
+
+var prepare = (put, out, processors, ignored) => {
+  let map, f2t
+
   if (!Array.isArray(processors)) {
-    return [
-      new Map([[put, []]]),
-      filepath => [put, createEgg(filepath, put, out, processors)]
-    ]
-  }
+    map = new Map([[put, []]])
+    f2t = filepath => {
+      return [put, createEgg(filepath, put, out, processors)]
+    }
+  } else {
+    const pairs = createPairs(put, processors)
+    map = new Map(pairs.map(([dirpath]) => [dirpath, []]))
+    f2t = filepath => {
+      var _pairs$find = pairs.find(([dirpath]) => filepath.includes(dirpath)),
+        _pairs$find2 = slicedToArray(_pairs$find, 2)
 
-  const findEntries = processors.map(([dirpath, _processors]) => [
-    dirpath === '/' || dirpath === './' || dirpath === '*'
-      ? put
-      : path.join(put, dirpath),
-    _processors
-  ])
-
-  return [
-    new Map([[put, []]].concat(findEntries.map(([dirpath]) => [dirpath, []]))),
-    filepath => {
-      var _ref = findEntries.find(([path$$1]) =>
-          filepath.includes(path$$1)
-        ) || [put, {}],
-        _ref2 = slicedToArray(_ref, 2)
-
-      const dirpath = _ref2[0],
-        processors = _ref2[1]
+      const dirpath = _pairs$find2[0],
+        processors = _pairs$find2[1]
 
       return [dirpath, createEgg(filepath, put, out, processors)]
     }
-  ]
+  }
+
+  return recursiveSettingMap(put, ignored, f2t, map).then(() => ({ map, f2t }))
 }
+
+const createPairs = (put, processorsAsArray) => {
+  const pairs = processorsAsArray.map(([dirpath, processors]) => [
+    PUT_EXPRESSION.includes(dirpath) ? put : path.join(put, dirpath),
+    processors
+  ])
+
+  if (!pairs.some(([dirpath]) => dirpath === put)) pairs.push([put, {}])
+
+  return pairs
+}
+
+const recursiveSettingMap = (put, ignored, f2t, map) =>
+  recursiveReaddir(put, ignored).then(filepaths =>
+    filepaths.map(f2t).forEach(([dirpath, egg]) => {
+      const eggs = map.get(dirpath)
+      eggs.push(egg)
+    })
+  )
 
 const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
@@ -156,6 +170,9 @@ var zap = ({ filepath, outpath, isStream, options, processor }) => {
   const ee = new EventEmitter()
   const on = (...arg) => ee.on(...arg)
 
+  let message
+  const msg = _message => (message = _message)
+
   let process_promise
 
   if (!processor) {
@@ -166,6 +183,7 @@ var zap = ({ filepath, outpath, isStream, options, processor }) => {
       options,
       processor,
       on,
+      msg,
       outpath
     })
   } else {
@@ -174,11 +192,12 @@ var zap = ({ filepath, outpath, isStream, options, processor }) => {
       options,
       processor,
       on,
+      msg,
       outpath
     })
   }
 
-  return process_promise.then(() => ee.emit('finish'))
+  return process_promise.then(() => ee.emit('finish')).then(() => message)
 }
 
 const parseExBase = pathstring => {
@@ -192,10 +211,10 @@ const parseExBase = pathstring => {
   return { root, dir, name, ext }
 }
 
-const bufferProcess = ({ filepath, options, processor, on, outpath }) =>
+const bufferProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   fsExtra
     .readFile(filepath, options)
-    .then(data => processor(data, { on, out: parseExBase(outpath) }))
+    .then(data => processor(data, { on, msg, out: parseExBase(outpath) }))
     .then(result => createArgs(result, outpath, isProcessResult))
     .then(
       args =>
@@ -203,7 +222,7 @@ const bufferProcess = ({ filepath, options, processor, on, outpath }) =>
         Promise.all(args.map(arg => fsExtra.outputFile(...arg)))
     )
 
-const streamProcess = ({ filepath, options, processor, on, outpath }) =>
+const streamProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   new Promise((resolve, reject) => {
     const readable = fsExtra.createReadStream(filepath, options)
     readable.on('error', reject)
@@ -212,31 +231,32 @@ const streamProcess = ({ filepath, options, processor, on, outpath }) =>
       .then(() =>
         processor((...arg) => readable.pipe(...arg), {
           on,
+          msg,
           out: parseExBase(outpath)
         })
       )
       .then(result => createArgs(result, outpath, isStreamResult))
       .then(
         args =>
-          !Array.isArray(args)
-            ? resolve()
-            : Promise.all(
-                args.map(([outpath, piped]) =>
-                  fsExtra
-                    .ensureDir(
-                      path__default.resolve(path__default.dirname(outpath))
-                    )
-                    .then(
-                      () =>
-                        new Promise(resolve => {
-                          const writable = fsExtra.createWriteStream(outpath)
-                          writable.on('error', reject)
-                          writable.on('finish', resolve)
-                          piped.pipe(writable)
-                        })
-                    )
+          Array.isArray(args) &&
+          Promise.all(
+            args.map(([outpath, stream]) => {
+              stream.on('error', reject)
+              return fsExtra
+                .ensureDir(
+                  path__default.resolve(path__default.dirname(outpath))
                 )
-              )
+                .then(
+                  () =>
+                    new Promise(resolve => {
+                      const writable = fsExtra.createWriteStream(outpath)
+                      writable.on('error', reject)
+                      writable.on('finish', resolve)
+                      stream.pipe(writable)
+                    })
+                )
+            })
+          )
       )
       .then(resolve)
   })
@@ -441,25 +461,19 @@ const recursiveRemoveEgg = (eggs, dirpath, spliced = []) => {
 
 //
 
-const BASE_COLOR = 'yellow'
+const BASE_COLOR = 'cyan'
+const PRE_SUCC = chalk.green(figures.tick)
+const PRE_FAIL = chalk.red(figures.cross)
 
 const init = (config = {}) => {
   assert(config.put && typeof config.put === 'string', '')
   assert(config.out && typeof config.out === 'string', '')
   config.put = path.normalize(config.put)
   config.out = path.normalize(config.out)
+  process.env.CHIN_PUT = config.put
+  process.env.CHIN_OUT = config.out
   return config
 }
-
-const pushToMap = (map, f2t, ...arg) =>
-  recursiveReaddir(...arg)
-    .then(filepaths =>
-      filepaths.map(f2t).forEach(([dirpath, egg]) => {
-        const eggs = map.get(dirpath)
-        eggs.push(egg)
-      })
-    )
-    .then(() => map)
 
 const chin = (() => {
   var _ref = asyncToGenerator(function*(config) {
@@ -471,16 +485,12 @@ const chin = (() => {
       processors = _init.processors,
       verbose = _init.verbose
 
-    var _prepare = prepare(put, out, processors),
-      _prepare2 = slicedToArray(_prepare, 2)
+    var _ref2 = yield prepare(put, out, processors, ignored)
 
-    const initialMap = _prepare2[0],
-      f2t = _prepare2[1]
+    const map = _ref2.map
 
-    const map = yield pushToMap(initialMap, f2t, put, ignored)
-    return (!verbose ? zapAllQuiet(map) : zapAllVerbose(map)).then(function() {
-      return undefined
-    })
+    yield zapAll(map, verbose)
+    return
   })
 
   return function chin(_x) {
@@ -489,7 +499,7 @@ const chin = (() => {
 })()
 
 const watch = (() => {
-  var _ref2 = asyncToGenerator(function*(config) {
+  var _ref3 = asyncToGenerator(function*(config) {
     var _init2 = init(config)
 
     const put = _init2.put,
@@ -499,26 +509,31 @@ const watch = (() => {
       verbose = _init2.verbose,
       watchOpts = _init2.watch
 
-    var _prepare3 = prepare(put, out, processors),
-      _prepare4 = slicedToArray(_prepare3, 2)
+    var _ref4 = yield prepare(put, out, processors, ignored)
 
-    const initialMap = _prepare4[0],
-      f2t = _prepare4[1]
+    const map = _ref4.map,
+      f2t = _ref4.f2t
 
-    const map = yield pushToMap(initialMap, f2t, put, ignored)
-    return (!verbose ? zapAllQuiet(map) : zapAllVerbose(map))
-      .then(function() {
-        return watchprocess({ map, f2t, put, out, watchOpts, ignored, verbose })
-      })
-      .then(function(watcher) {
-        return watcher
-      })
+    yield zapAll(map, verbose)
+    const watcher = watchprocess({
+      map,
+      f2t,
+      put,
+      out,
+      watchOpts,
+      ignored,
+      verbose
+    })
+    return watcher
   })
 
   return function watch(_x2) {
-    return _ref2.apply(this, arguments)
+    return _ref3.apply(this, arguments)
   }
 })()
+
+const zapAll = (map, verbose) =>
+  !verbose ? zapAllQuiet(map) : zapAllVerbose(map)
 
 const zapAllQuiet = map => Promise.all([].concat(...[...map.values()]).map(zap))
 
@@ -528,36 +543,35 @@ const zapAllVerbose = map =>
   )
 
 const recursiveZapDir = (() => {
-  var _ref3 = asyncToGenerator(function*(entries, count = 0) {
+  var _ref5 = asyncToGenerator(function*(entries, count = 0) {
     var _entries$splice$ = slicedToArray(entries.splice(0, 1)[0], 2)
 
     const dirpath = _entries$splice$[0],
       eggs = _entries$splice$[1]
 
     if (eggs.length) {
-      const spinner = ora({ color: BASE_COLOR }).start(
-        chalk.gray(`${dirpath}: `)
-      )
-
+      console.log(`${dirpath}: ${chalk[BASE_COLOR](`${eggs.length} files`)}`)
       let countByDir = 0
-
       yield Promise.all(
         eggs.map(function(egg) {
-          return zap(egg).then(function() {
-            return (spinner.text = chalk.gray(
-              `${dirpath}: ${countByDir++} / ${eggs.length}`
-            ))
-          })
+          return zap(egg)
+            .then(function(msg) {
+              return console.log(
+                `${PRE_SUCC} ${chalk.gray(
+                  `${egg.filepath}${msg ? `: ${msg}` : ''}`
+                )}`
+              )
+            })
+            .then(function() {
+              return countByDir++
+            })
+            .catch(function(err) {
+              return console.log(
+                `${PRE_FAIL} ${chalk.gray(`${egg.filepath}: ${err.message}`)}`
+              )
+            })
         })
       )
-        .then(function() {
-          return spinner.succeed(chalk.gray(`${dirpath}: ${eggs.length} files`))
-        })
-        .catch(function(err) {
-          spinner.fail()
-          throw err
-        })
-
       count += countByDir
     }
 
@@ -565,7 +579,7 @@ const recursiveZapDir = (() => {
   })
 
   return function recursiveZapDir(_x3) {
-    return _ref3.apply(this, arguments)
+    return _ref5.apply(this, arguments)
   }
 })()
 

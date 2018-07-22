@@ -1,12 +1,12 @@
 {
   "name": "chin",
-  "version": "3.0.11",
+  "version": "3.1.0",
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
   "main": "dist/index.js",
   "bin": "bin/chin.js",
-  "description": "Simple build tool that matches and processes files with extension instead of regexp.",
+  "description": "Simple build tool that matches and processes files by extension instead of regexp.",
   "keywords": [
     "chin",
     "build tool",
@@ -35,7 +35,6 @@
     "consola": "^1.3.0",
     "figures": "^2.0.0",
     "fs-extra": "^4.0.1",
-    "ora": "^1.3.0",
     "recursive-readdir": "^2.2.1"
   },
   "devDependencies": {

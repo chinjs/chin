@@ -27,13 +27,16 @@ export default ({ filepath, outpath, isStream, options, processor }: {
   isStream: boolean,
   options: any,
   processor: any
-}): Promise<boolean> => {
+}): Promise<void | string> => {
 
   filepath = path.resolve(filepath)
   outpath = path.resolve(outpath)
 
   const ee = new EventEmitter()
   const on = (...arg) => ee.on(...arg)
+
+  let message
+  const msg = (_message) => message = _message
 
   let process_promise
 
@@ -42,14 +45,16 @@ export default ({ filepath, outpath, isStream, options, processor }: {
   } else if (!isStream) {
     ;(processor: ProcessorFn)
     ;(options: ReadFileOpts)
-    process_promise = bufferProcess({ filepath, options, processor, on, outpath })
+    process_promise = bufferProcess({ filepath, options, processor, on, msg, outpath })
   } else {
     ;(processor: StreamProcessorFn)
     ;(options: CreateReadStreamOpts)
-    process_promise = streamProcess({ filepath, options, processor, on, outpath })
+    process_promise = streamProcess({ filepath, options, processor, on, msg, outpath })
   }
 
-  return process_promise.then(() => ee.emit('finish'))
+  return process_promise
+  .then(() => ee.emit('finish'))
+  .then(() => message)
 }
 
 const parseExBase = (pathstring) => {
@@ -57,16 +62,16 @@ const parseExBase = (pathstring) => {
   return { root, dir, name, ext }
 }
 
-const bufferProcess = ({ filepath, options, processor, on, outpath }) =>
+const bufferProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   readFile(filepath, options)
-  .then(data => processor(data, { on, out: parseExBase(outpath) }))
+  .then(data => processor(data, { on, msg, out: parseExBase(outpath) }))
   .then(result => createArgs(result, outpath, isProcessResult))
   .then(args =>
     Array.isArray(args) &&
     Promise.all(args.map(arg => outputFile(...arg)))
   )
 
-const streamProcess = ({ filepath, options, processor, on, outpath }) =>
+const streamProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   new Promise((resolve, reject) => {
 
     const readable = createReadStream(filepath, options)
@@ -76,29 +81,23 @@ const streamProcess = ({ filepath, options, processor, on, outpath }) =>
     .then(() =>
       processor(
         (...arg) => readable.pipe(...arg),
-        { on, out: parseExBase(outpath) }
+        { on, msg, out: parseExBase(outpath) }
       )
     )
     .then(result => createArgs(result, outpath, isStreamResult))
     .then(args =>
-      !Array.isArray(args) ? resolve() :
-      Promise.all(
-        args.map(([outpath,piped]) =>
-          ensureDir(
-            path.resolve(
-              path.dirname(outpath)
-            )
-          )
-          .then(() =>
-            new Promise(resolve => {
-              const writable = createWriteStream(outpath)
-              writable.on('error', reject)
-              writable.on('finish', resolve)
-              piped.pipe(writable)
-            })
-          )
+      Array.isArray(args) &&
+      Promise.all(args.map(([outpath,stream]) => {
+        stream.on('error', reject)
+        return ensureDir(path.resolve(path.dirname(outpath))).then(() =>
+          new Promise(resolve => {
+            const writable = createWriteStream(outpath)
+            writable.on('error', reject)
+            writable.on('finish', resolve)
+            stream.pipe(writable)
+          })
         )
-      )
+      }))
     )
     .then(resolve)
   })

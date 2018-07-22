@@ -5,7 +5,7 @@
 [![Build Status](https://img.shields.io/travis/chinjs/chin.svg?longCache=true&style=flat-square)](https://travis-ci.org/chinjs/chin)
 [![Coverage Status](https://img.shields.io/codecov/c/github/chinjs/chin.svg?longCache=true&style=flat-square)](https://codecov.io/github/chinjs/chin)
 
-Simple build tool that matches and processes files with extension instead of regexp.
+Simple build tool that matches and processes files by extension instead of regexp.
 
 ## Usage
 ```js
@@ -31,13 +31,13 @@ yarn chin -c
     chin.config.js
     assets
     ├─ sitemap.xml
-    |─ robots.txt
+    ├─ robots.txt
     └─ images
        ├─ foo.png
        └─ bar.jpg
     public
     ├─ sitemap.xml // copied
-    |─ robots.txt  // copied
+    ├─ robots.txt  // copied
     └─ images
        ├─ foo.png  // optimized
        └─ bar.jpg  // optimized
@@ -156,8 +156,17 @@ const { format } = require('path')
 const outpath = format(Object.assign(util.out, { ext: '.other' }))
 ```
 
+#### msg
+```js
+util.msg('any message')
+```
+
 #### on
 `"finish"` is emitted after write.
+
+### env
+- `process.env.CHIN_PUT`
+- `process.env.CHIN_OUT`
 
 ## License
 MIT (http://opensource.org/licenses/MIT)

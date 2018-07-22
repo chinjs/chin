@@ -1,43 +1,65 @@
 // @flow
+import recursiveReaddir from 'recursive-readdir'
 import { join, extname } from 'path'
 import {
   type Path,
   type Processors,
+  type Ignored,
   type EggObj,
   type F2TFn
 } from '../types.js'
 
-export default (put: Path, out: Path, processors: any): [Map<Path, EggObj[]>, F2TFn] => {
+const PUT_EXPRESSION = ['/', './', '*']
+
+export default (
+  put: Path,
+  out: Path,
+  processors: any,
+  ignored: Ignored | void
+): Promise<{
+  map: Map<Path, EggObj[]>,
+  f2t: F2TFn
+}> => {
+
+  let map, f2t
 
   if (!Array.isArray(processors)) {
     (processors: Processors | void)
-    return [
-      new Map([ [put, []] ]),
-      (filepath: Path) => [put, createEgg(filepath, put, out, processors)]
-    ]
-  }
-
-  (processors: [Path, Processors][])
-
-  const findEntries = processors.map(([dirpath,_processors]) => [
-    (dirpath === '/' || dirpath === './' || dirpath === '*')
-    ? put
-    : join(put, dirpath),
-    _processors
-  ])
-
-  return [
-    new Map([
-      [put, []]
-    ].concat(findEntries.map(([dirpath]) =>
-      [dirpath, []]
-    ))),
-    (filepath: Path) => {
-      const [dirpath, processors] = findEntries.find(([path]) => filepath.includes(path)) || [put, {}]
+    map = new Map([ [put, []] ])
+    f2t = (filepath: Path) => {
+      return [put, createEgg(filepath, put, out, processors)]
+    }
+  } else {
+    (processors: [Path, Processors][])
+    const pairs = createPairs(put, processors)
+    map = new Map(pairs.map(([ dirpath ]) => [dirpath, []]))
+    f2t = (filepath: Path) => {
+      const [dirpath, processors] = pairs.find(([ dirpath ]) => filepath.includes(dirpath))
       return [dirpath, createEgg(filepath, put, out, processors)]
     }
-  ]
+  }
+
+  return recursiveSettingMap(put, ignored, f2t, map).then(() => ({ map, f2t }))
 }
+
+const createPairs = (put, processorsAsArray) => {
+  const pairs = processorsAsArray.map(([ dirpath, processors ]) => [
+    PUT_EXPRESSION.includes(dirpath) ? put : join(put, dirpath),
+    processors
+  ])
+
+  if (!pairs.some(([ dirpath ]) => dirpath === put)) pairs.push([put, {}])
+
+  return pairs
+}
+
+const recursiveSettingMap = (put, ignored, f2t, map) =>
+  recursiveReaddir(put, ignored).then(filepaths =>
+    filepaths.map(f2t).forEach(([ dirpath, egg ]) => {
+      const eggs: any = map.get(dirpath);(eggs: EggObj[])
+      eggs.push(egg)
+    })
+  )
 
 const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
