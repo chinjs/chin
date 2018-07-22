@@ -17,6 +17,8 @@ const init = (config = {}) => {
   assert(config.out && typeof config.out === 'string', '')
   config.put = normalize(config.put)
   config.out = normalize(config.out)
+  process.env.CHIN_PUT = config.put
+  process.env.CHIN_OUT = config.out
   return config
 }
 

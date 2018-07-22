@@ -180,6 +180,8 @@ describe('chin', () => {
     it('fail', test({
       processor: (data) =>
         new Promise(resolve => setTimeout(resolve, 300))
+        .then(() => assert.equal(process.env.CHIN_PUT, put))
+        .then(() => assert.equal(process.env.CHIN_OUT, out))
         .then(() => { throw new Error('err message') })
     }))
     

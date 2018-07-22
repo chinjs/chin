@@ -156,6 +156,11 @@ const { format } = require('path')
 const outpath = format(Object.assign(util.out, { ext: '.other' }))
 ```
 
+#### msg
+```js
+util.msg('any message')
+```
+
 #### on
 `"finish"` is emitted after write.
 
