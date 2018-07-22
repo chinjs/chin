@@ -1,42 +1,61 @@
 // @flow
+import recursiveReaddir from 'recursive-readdir'
 import { join, extname } from 'path'
 import {
   type Path,
   type Processors,
+  type Ignored,
   type EggObj,
   type F2TFn
 } from '../types.js'
 
-export default (put: Path, out: Path, processors: any): [Map<Path, EggObj[]>, F2TFn] => {
+const createMap = (put, ignored, f2t, map) =>
+  recursiveReaddir(put, ignored)
+  .then(filepaths => filepaths.map(f2t).forEach(([ dirpath, egg ]) => {
+    const eggs: any = map.get(dirpath);(eggs: EggObj[])
+    eggs.push(egg)
+  }))
+  .then(() => map)
+
+export default (
+  put: Path,
+  out: Path,
+  processors: any,
+  ignored: Ignored
+): Promise<{
+  map: Map<Path, EggObj[]>,
+  f2t: F2TFn
+}> => {
+
+  let initialMap, f2t
 
   if (!Array.isArray(processors)) {
     (processors: Processors | void)
-    return [
-      new Map([ [put, []] ]),
-      (filepath: Path) => [put, createEgg(filepath, put, out, processors)]
-    ]
-  }
-
-  (processors: [Path, Processors][])
-
-  const findEntries = processors.map(([dirpath,_processors]) => [
-    (dirpath === '/' || dirpath === './' || dirpath === '*')
-    ? put
-    : join(put, dirpath),
-    _processors
-  ])
-
-  return [
-    new Map([
-      [put, []]
-    ].concat(findEntries.map(([dirpath]) =>
-      [dirpath, []]
-    ))),
-    (filepath: Path) => {
-      const [dirpath, processors] = findEntries.find(([path]) => filepath.includes(path)) || [put, {}]
+    
+    initialMap = new Map([ [put, []] ])
+    
+    f2t = (filepath: Path) => {
+      return [put, createEgg(filepath, put, out, processors)]
+    }
+  } else {
+    (processors: [Path, Processors][])
+    
+    const findEntries = processors.map(([dirpath,_processors]) => [
+      (dirpath === '/' || dirpath === './' || dirpath === '*')
+      ? put
+      : join(put, dirpath),
+      _processors
+    ])
+    
+    initialMap = new Map([ [put, []] ].concat(findEntries.map(([ dirpath ]) => [dirpath, []] )))
+    
+    f2t = (filepath: Path) => {
+      const [dirpath, processors] = findEntries.find(([ dirpath ]) => filepath.includes(dirpath)) || [put, {}]
       return [dirpath, createEgg(filepath, put, out, processors)]
     }
-  ]
+  }
+  
+  return createMap(put, ignored, f2t, initialMap).then(map => ({ map, f2t }))
 }
 
 const createEgg = (filepath, put, out, processors = {}) =>
