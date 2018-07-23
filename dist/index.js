@@ -538,19 +538,23 @@ const zapAll = (map, verbose) =>
 const zapAllQuiet = map => Promise.all([].concat(...[...map.values()]).map(zap))
 
 const zapAllVerbose = map =>
-  recursiveZapDir([].concat([...map.entries()])).then(count =>
+  recursiveZapDir(map.size === 1, [].concat([...map.entries()])).then(count =>
     console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`))
   )
 
 const recursiveZapDir = (() => {
-  var _ref5 = asyncToGenerator(function*(entries, count = 0) {
+  var _ref5 = asyncToGenerator(function*(isOneDir, entries, count = 0) {
     var _entries$splice$ = slicedToArray(entries.splice(0, 1)[0], 2)
 
     const dirpath = _entries$splice$[0],
       eggs = _entries$splice$[1]
 
     if (eggs.length) {
-      console.log(`${dirpath}: ${chalk[BASE_COLOR](`${eggs.length} files`)}`)
+      console.log(
+        (isOneDir ? `` : `${dirpath}: `) +
+          chalk[BASE_COLOR](`${eggs.length} files`)
+      )
+
       let countByDir = 0
       yield Promise.all(
         eggs.map(function(egg) {
@@ -575,10 +579,10 @@ const recursiveZapDir = (() => {
       count += countByDir
     }
 
-    return entries.length ? recursiveZapDir(entries, count) : count
+    return entries.length ? recursiveZapDir(isOneDir, entries, count) : count
   })
 
-  return function recursiveZapDir(_x3) {
+  return function recursiveZapDir(_x3, _x4) {
     return _ref5.apply(this, arguments)
   }
 })()
