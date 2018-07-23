@@ -43,19 +43,27 @@ const zapAll = (map, verbose) =>
   : zapAllVerbose(map)
 
 const zapAllQuiet = (map) =>
-  Promise.all([].concat(...[...map.values()]).map(zap))
+  Promise.all(
+    []
+    .concat(...[...map.values()])
+    .map(zap)
+  )
 
 const zapAllVerbose = (map) =>
-  recursiveZapDir([].concat([...map.entries()])).then(count =>
+  recursiveZapDir(
+    map.size === 1,
+    [].concat([...map.entries()])
+  ).then(count =>
     console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`))
   )
 
-const recursiveZapDir = async (entries, count = 0) => {
+const recursiveZapDir = async (isOneDir, entries, count = 0) => {
 
   const [ dirpath, eggs ] = entries.splice(0, 1)[0]
 
   if (eggs.length) {
-    console.log(`${dirpath}: ${chalk[BASE_COLOR](`${eggs.length} files`)}`)
+    console.log((isOneDir ? `` : `${dirpath}: `) + chalk[BASE_COLOR](`${eggs.length} files`))
+
     let countByDir = 0
     await Promise.all(eggs.map(egg =>
       zap(egg)
@@ -66,7 +74,7 @@ const recursiveZapDir = async (entries, count = 0) => {
     count += countByDir
   }
 
-  return entries.length ? recursiveZapDir(entries, count) : count
+  return entries.length ? recursiveZapDir(isOneDir, entries, count) : count
 }
 
 export { chin, watch }
