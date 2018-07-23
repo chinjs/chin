@@ -5,9 +5,11 @@ function _interopDefault(ex) {
   return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
 }
 
-var consola = _interopDefault(require('consola'))
+var chalk = _interopDefault(require('chalk'))
+var figures = _interopDefault(require('figures'))
 var appRootPath = require('app-root-path')
 var fsExtra = require('fs-extra')
+var path = require('path')
 var program = _interopDefault(require('commander'))
 var __ = require('..')
 
@@ -15,6 +17,8 @@ const PUT = 'assets'
 const OUT = 'public'
 const CONFIG1 = 'chin.config.js'
 const CONFIG2 = '.chin/index.js'
+const PRE_INFO = chalk.blue('info')
+const PRE_FAIL = chalk.red(figures.cross)
 
 const requireModules = requireValue =>
   requireValue.split(',').forEach(moduleName => require(moduleName))
@@ -32,7 +36,7 @@ const getConfig = configValue => {
       try {
         config = appRootPath.require(CONFIG2)
       } catch (e2) {
-        throw !e2.message.includes(CONFIG2)
+        throw !e2.message.includes(path.normalize(CONFIG2))
           ? e2
           : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`)
       }
@@ -49,13 +53,13 @@ var action = (program$$1, action) =>
       () =>
         program$$1.config
           ? getConfig(program$$1.config)
-          : consola.info('no config')
+          : console.info(`${PRE_INFO} no config`)
     )
     .then((config = {}) => (Array.isArray(config) ? config : [config]))
     .then(configs => recursiveSpliceAction(program$$1, configs, action))
     .then(() => console.log(''))
     .catch(err => {
-      consola.error(err)
+      console.error(PRE_FAIL, err)
       process.exit(1)
     })
 

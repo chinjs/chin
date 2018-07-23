@@ -1,11 +1,15 @@
-import consola from 'consola'
+import chalk from 'chalk'
+import figures from 'figures'
 import { require as rooquire } from 'app-root-path'
 import { remove } from 'fs-extra'
+import { normalize } from 'path'
 
 export const PUT = 'assets'
 export const OUT = 'public'
 export const CONFIG1 = 'chin.config.js'
 export const CONFIG2 = '.chin/index.js'
+const PRE_INFO = chalk.blue('info')
+const PRE_FAIL = chalk.red(figures.cross)
 
 const requireModules = (requireValue) =>
   requireValue
@@ -14,7 +18,7 @@ const requireModules = (requireValue) =>
 
 const getConfig = (configValue) => {
   let config
-  
+
   if (typeof configValue === 'string') {
     config = rooquire(configValue)
   } else {
@@ -22,7 +26,7 @@ const getConfig = (configValue) => {
     catch (e1) {
       if (!e1.message.includes(CONFIG1)) throw e1
       try { config = rooquire(CONFIG2) }
-      catch (e2) { throw !e2.message.includes(CONFIG2) ? e2 : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`) }
+      catch (e2) { throw !e2.message.includes(normalize(CONFIG2)) ? e2 : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`) }
     }
   }
 
@@ -37,7 +41,7 @@ export default (program, action) => Promise.resolve()
   .then(() =>
     program.config
       ? getConfig(program.config)
-      : consola.info('no config')
+      : console.info(`${PRE_INFO} no config`)
   )
   .then((config = {}) =>
     Array.isArray(config)
@@ -53,7 +57,7 @@ export default (program, action) => Promise.resolve()
   )
   .then(() => console.log(''))
   .catch((err) => {
-    consola.error(err)
+    console.error(PRE_FAIL, err)
     process.exit(1)
   })
 
