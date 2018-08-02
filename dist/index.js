@@ -96,7 +96,8 @@ var slicedToArray = (function() {
 
 //
 
-const PUT_EXPRESSION = ['/', './', '*']
+const CWD_PATHS = ['.', './'].map(path.normalize)
+const PUT_EXPRESSION = ['/', '.', './', '*']
 
 var prepare = (put, out, processors, ignored) => {
   let map, f2t
@@ -145,7 +146,7 @@ const recursiveSettingMap = (put, ignored, f2t, map) =>
 const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
     filepath,
-    path.join(out, filepath.split(put)[1]),
+    path.join(out, CWD_PATHS.includes(put) ? filepath : filepath.split(put)[1]),
     processors[path.extname(filepath).slice(1)] || {}
   )
 
