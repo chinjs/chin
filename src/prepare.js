@@ -1,6 +1,6 @@
 // @flow
 import recursiveReaddir from 'recursive-readdir'
-import { join, extname } from 'path'
+import { normalize, join, extname } from 'path'
 import {
   type Path,
   type Processors,
@@ -9,7 +9,8 @@ import {
   type F2TFn
 } from '../types.js'
 
-const PUT_EXPRESSION = ['/', './', '*']
+const CWD_PATHS = ['.', './'].map(normalize)
+const PUT_EXPRESSION = ['/', '.', './', '*']
 
 export default (
   put: Path,
@@ -64,7 +65,7 @@ const recursiveSettingMap = (put, ignored, f2t, map) =>
 const createEgg = (filepath, put, out, processors = {}) =>
   Egg(
     filepath,
-    join(out, filepath.split(put)[1]),
+    join(out, CWD_PATHS.includes(put) ? filepath : filepath.split(put)[1]),
     processors[extname(filepath).slice(1)] || {}
   )
 

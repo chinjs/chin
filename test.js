@@ -27,6 +27,17 @@ const tree = {
   }
 }
 
+describe('chin({ put: [cwd] })', () => {
+  beforeEach(() => mock(tree))
+  afterEach(() => mock.restore())
+
+  const test = (put) => () =>
+    chin({ put, out })
+
+  it('.', test('.'))
+  it('./', test('./'))
+})
+
 describe('chin', () => {
 
   beforeEach(() => mock(tree))
