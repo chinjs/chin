@@ -5,7 +5,7 @@ src/
 .travis.yml
 babel.config.js
 codecov.yml
-rogo.svg
+logo.svg
 rollup.config.js
 test.js
 types.js
