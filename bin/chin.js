@@ -5,13 +5,12 @@ function _interopDefault(ex) {
   return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
 }
 
-var chalk = _interopDefault(require('chalk'))
-var figures = _interopDefault(require('figures'))
-var appRootPath = require('app-root-path')
-var fsExtra = require('fs-extra')
-var path = require('path')
 var program = _interopDefault(require('commander'))
 var __ = require('..')
+var chalk = _interopDefault(require('chalk'))
+var figures = _interopDefault(require('figures'))
+var fsExtra = require('fs-extra')
+var path = require('path')
 
 const PUT = 'assets'
 const OUT = 'public'
@@ -23,18 +22,21 @@ const PRE_FAIL = chalk.red(figures.cross)
 const requireModules = requireValue =>
   requireValue.split(',').forEach(moduleName => require(moduleName))
 
+const rooquire = filePath => require(path.join(process.cwd(), filePath))
+
 const getConfig = configValue => {
   let config
 
   if (typeof configValue === 'string') {
-    config = appRootPath.require(configValue)
+    config = rooquire(configValue)
   } else {
     try {
-      config = appRootPath.require(CONFIG1)
+      config = rooquire(CONFIG1)
     } catch (e1) {
       if (!e1.message.includes(CONFIG1)) throw e1
+
       try {
-        config = appRootPath.require(CONFIG2)
+        config = rooquire(CONFIG2)
       } catch (e2) {
         throw !e2.message.includes(path.normalize(CONFIG2))
           ? e2
@@ -49,11 +51,10 @@ const getConfig = configValue => {
 var action = (program$$1, action) =>
   Promise.resolve()
     .then(() => program$$1.require && requireModules(program$$1.require))
-    .then(
-      () =>
-        program$$1.config
-          ? getConfig(program$$1.config)
-          : console.info(`${PRE_INFO} no config`)
+    .then(() =>
+      program$$1.config
+        ? getConfig(program$$1.config)
+        : console.info(`${PRE_INFO} no config`)
     )
     .then((config = {}) => (Array.isArray(config) ? config : [config]))
     .then(configs => recursiveSpliceAction(program$$1, configs, action))
@@ -66,24 +67,32 @@ var action = (program$$1, action) =>
 const recursiveSpliceAction = (program$$1, configs, action, isCutline) => {
   const config = configs.splice(0, 1)[0]
 
-  var _normalizeOptions = normalizeOptions(program$$1, config)
-
-  const put = _normalizeOptions.put,
+  const _normalizeOptions = normalizeOptions(program$$1, config),
+    put = _normalizeOptions.put,
     out = _normalizeOptions.out,
     clean = _normalizeOptions.clean,
     verbose = _normalizeOptions.verbose
+
   const before = config.before,
     after = config.after,
     ignored = config.ignored,
     processors = config.processors,
     watch = config.watch
-
   return Promise.resolve()
     .then(() => verbose && isCutline && cutLog())
     .then(() => verbose && declareLog(program$$1.version(), put, out))
     .then(() => typeof before === 'function' && before())
     .then(() => clean && fsExtra.remove(out))
-    .then(() => action({ put, out, verbose, ignored, processors, watch }))
+    .then(() =>
+      action({
+        put,
+        out,
+        verbose,
+        ignored,
+        processors,
+        watch
+      })
+    )
     .then(() => typeof after === 'function' && after())
     .then(
       () =>
@@ -123,7 +132,6 @@ program
     chin -c -r babel-register,dotenv/config
 `)
   )
-
 program
   .command('watch')
   .option('-c, --config [path]', `[default: ${CONFIG1} || ${CONFIG2}]`)
@@ -134,9 +142,7 @@ program
   .option('-q, --quiet')
   .on('--help', () => console.log(``))
   .action(() => action(program, __.watch))
-
 program.parse(process.argv)
-
 program.args.length === 0
   ? action(program, __.chin)
   : program.args[0].constructor !== program.Command && program.help()
