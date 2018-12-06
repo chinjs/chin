@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import figures from 'figures'
 import { remove } from 'fs-extra'
-import { normalize } from 'path'
+import { join, normalize } from 'path'
 
 export const PUT = 'assets'
 export const OUT = 'public'
@@ -16,7 +16,7 @@ const requireModules = (requireValue) =>
   .forEach(moduleName => require(moduleName))
 
 const rooquire = (filePath) =>
-  require(path.join(process.cwd(), filePath))
+  require(join(process.cwd(), filePath))
 
 const getConfig = (configValue) => {
   let config

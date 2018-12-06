@@ -10,7 +10,7 @@ var __ = require('..')
 var chalk = _interopDefault(require('chalk'))
 var figures = _interopDefault(require('figures'))
 var fsExtra = require('fs-extra')
-var path$1 = require('path')
+var path = require('path')
 
 const PUT = 'assets'
 const OUT = 'public'
@@ -38,7 +38,7 @@ const getConfig = configValue => {
       try {
         config = rooquire(CONFIG2)
       } catch (e2) {
-        throw !e2.message.includes(path$1.normalize(CONFIG2))
+        throw !e2.message.includes(path.normalize(CONFIG2))
           ? e2
           : new Error(`Cannot find ${CONFIG1} || ${CONFIG2}`)
       }
