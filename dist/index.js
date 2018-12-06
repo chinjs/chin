@@ -6,122 +6,127 @@ function _interopDefault(ex) {
   return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex
 }
 
-var recursiveReaddir = _interopDefault(require('recursive-readdir'))
-var path = require('path')
-var path__default = _interopDefault(path)
-var EventEmitter = _interopDefault(require('events'))
-var fsExtra = require('fs-extra')
-var chokidar = _interopDefault(require('chokidar'))
-var chalk = _interopDefault(require('chalk'))
 var assert = _interopDefault(require('assert'))
 var figures = _interopDefault(require('figures'))
+var recursiveReaddir = _interopDefault(require('recursive-readdir'))
+var EventEmitter = _interopDefault(require('events'))
+var chokidar = _interopDefault(require('chokidar'))
+var chalk = _interopDefault(require('chalk'))
+var fsExtra = require('fs-extra')
+var path = require('path')
+var path__default = _interopDefault(path)
 
-//
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg)
+    var value = info.value
+  } catch (error) {
+    reject(error)
+    return
+  }
 
-var asyncToGenerator = function(fn) {
+  if (info.done) {
+    resolve(value)
+  } else {
+    Promise.resolve(value).then(_next, _throw)
+  }
+}
+
+function _asyncToGenerator(fn) {
   return function() {
-    var gen = fn.apply(this, arguments)
+    var self = this,
+      args = arguments
     return new Promise(function(resolve, reject) {
-      function step(key, arg) {
-        try {
-          var info = gen[key](arg)
-          var value = info.value
-        } catch (error) {
-          reject(error)
-          return
-        }
+      var gen = fn.apply(self, args)
 
-        if (info.done) {
-          resolve(value)
-        } else {
-          return Promise.resolve(value).then(
-            function(value) {
-              step('next', value)
-            },
-            function(err) {
-              step('throw', err)
-            }
-          )
-        }
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, 'next', value)
       }
 
-      return step('next')
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, 'throw', err)
+      }
+
+      _next(undefined)
     })
   }
 }
 
-var slicedToArray = (function() {
-  function sliceIterator(arr, i) {
-    var _arr = []
-    var _n = true
-    var _d = false
-    var _e = undefined
+function _slicedToArray(arr, i) {
+  return (
+    _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest()
+  )
+}
 
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr
+}
+
+function _iterableToArrayLimit(arr, i) {
+  var _arr = []
+  var _n = true
+  var _d = false
+  var _e = undefined
+
+  try {
+    for (
+      var _i = arr[Symbol.iterator](), _s;
+      !(_n = (_s = _i.next()).done);
+      _n = true
+    ) {
+      _arr.push(_s.value)
+
+      if (i && _arr.length === i) break
+    }
+  } catch (err) {
+    _d = true
+    _e = err
+  } finally {
     try {
-      for (
-        var _i = arr[Symbol.iterator](), _s;
-        !(_n = (_s = _i.next()).done);
-        _n = true
-      ) {
-        _arr.push(_s.value)
-
-        if (i && _arr.length === i) break
-      }
-    } catch (err) {
-      _d = true
-      _e = err
+      if (!_n && _i['return'] != null) _i['return']()
     } finally {
-      try {
-        if (!_n && _i['return']) _i['return']()
-      } finally {
-        if (_d) throw _e
-      }
-    }
-
-    return _arr
-  }
-
-  return function(arr, i) {
-    if (Array.isArray(arr)) {
-      return arr
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i)
-    } else {
-      throw new TypeError(
-        'Invalid attempt to destructure non-iterable instance'
-      )
+      if (_d) throw _e
     }
   }
-})()
+
+  return _arr
+}
+
+function _nonIterableRest() {
+  throw new TypeError('Invalid attempt to destructure non-iterable instance')
+}
 
 //
 
 const CWD_PATHS = ['.', './'].map(path.normalize)
 const PUT_EXPRESSION = ['/', '.', './', '*']
-
 var prepare = (put, out, processors, ignored) => {
   let map, f2t
 
   if (!Array.isArray(processors)) {
     map = new Map([[put, []]])
+
     f2t = filepath => {
       return [put, createEgg(filepath, put, out, processors)]
     }
   } else {
     const pairs = createPairs(put, processors)
     map = new Map(pairs.map(([dirpath]) => [dirpath, []]))
-    f2t = filepath => {
-      var _pairs$find = pairs.find(([dirpath]) => filepath.includes(dirpath)),
-        _pairs$find2 = slicedToArray(_pairs$find, 2)
 
-      const dirpath = _pairs$find2[0],
+    f2t = filepath => {
+      const _pairs$find = pairs.find(([dirpath]) => filepath.includes(dirpath)),
+        _pairs$find2 = _slicedToArray(_pairs$find, 2),
+        dirpath = _pairs$find2[0],
         processors = _pairs$find2[1]
 
       return [dirpath, createEgg(filepath, put, out, processors)]
     }
   }
 
-  return recursiveSettingMap(put, ignored, f2t, map).then(() => ({ map, f2t }))
+  return recursiveSettingMap(put, ignored, f2t, map).then(() => ({
+    map,
+    f2t
+  }))
 }
 
 const createPairs = (put, processorsAsArray) => {
@@ -129,9 +134,7 @@ const createPairs = (put, processorsAsArray) => {
     PUT_EXPRESSION.includes(dirpath) ? put : path.join(put, dirpath),
     processors
   ])
-
   if (!pairs.some(([dirpath]) => dirpath === put)) pairs.push([put, {}])
-
   return pairs
 }
 
@@ -161,17 +164,20 @@ const Egg = (filepath, outpath, { isStream = false, processor, options }) => ({
 //
 
 const isString = data => typeof data === 'string'
+
 const isProcessResult = data => Buffer.isBuffer(data) || isString(data)
+
 const isStreamResult = data => data && typeof data.pipe === 'function'
 
 var zap = ({ filepath, outpath, isStream, options, processor }) => {
   filepath = path__default.resolve(filepath)
   outpath = path__default.resolve(outpath)
-
   const ee = new EventEmitter()
+
   const on = (...arg) => ee.on(...arg)
 
   let message
+
   const msg = _message => (message = _message)
 
   let process_promise
@@ -202,20 +208,30 @@ var zap = ({ filepath, outpath, isStream, options, processor }) => {
 }
 
 const parseExBase = pathstring => {
-  var _path$parse = path__default.parse(pathstring)
-
-  const root = _path$parse.root,
+  const _path$parse = path__default.parse(pathstring),
+    root = _path$parse.root,
     dir = _path$parse.dir,
     name = _path$parse.name,
     ext = _path$parse.ext
 
-  return { root, dir, name, ext }
+  return {
+    root,
+    dir,
+    name,
+    ext
+  }
 }
 
 const bufferProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   fsExtra
     .readFile(filepath, options)
-    .then(data => processor(data, { on, msg, out: parseExBase(outpath) }))
+    .then(data =>
+      processor(data, {
+        on,
+        msg,
+        out: parseExBase(outpath)
+      })
+    )
     .then(result => createArgs(result, outpath, isProcessResult))
     .then(
       args =>
@@ -227,7 +243,6 @@ const streamProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   new Promise((resolve, reject) => {
     const readable = fsExtra.createReadStream(filepath, options)
     readable.on('error', reject)
-
     Promise.resolve()
       .then(() =>
         processor((...arg) => readable.pipe(...arg), {
@@ -266,14 +281,12 @@ const createArgs = (result, outpath, isProcessed) =>
   isProcessed(result)
     ? [[outpath, result]]
     : !Array.isArray(result)
-      ? false
-      : isString(result[0]) && isProcessed(result[1])
-        ? [result]
-        : result.filter(
-            arg => Array.isArray(arg) && isString(arg[0]) && isProcessed(arg[1])
-          )
-
-//
+    ? false
+    : isString(result[0]) && isProcessed(result[1])
+    ? [result]
+    : result.filter(
+        arg => Array.isArray(arg) && isString(arg[0]) && isProcessed(arg[1])
+      )
 
 var watchprocess = ({ map, f2t, put, out, watchOpts, ignored, verbose }) => {
   const watcher = chokidar.watch(
@@ -292,17 +305,21 @@ var watchprocess = ({ map, f2t, put, out, watchOpts, ignored, verbose }) => {
     watcher.close()
   }
 
-  const opts = { map, f2t, put, out, ignored, verbose }
-
+  const opts = {
+    map,
+    f2t,
+    put,
+    out,
+    ignored,
+    verbose
+  }
   watcher.on('error', errorHandler)
-
   watcher.on(
     'ready',
     () =>
       verbose &&
       console.log(chalk.cyan('[start]') + ' ' + chalk.gray(put + ' => ' + out))
   )
-
   watcher.on('add', filepath => {
     const eggs = map.get(findKey(map, filepath))
     return (
@@ -310,15 +327,11 @@ var watchprocess = ({ map, f2t, put, out, watchOpts, ignored, verbose }) => {
       onAdd(filepath, opts).catch(errorHandler)
     )
   })
-
   watcher.on('change', filepath => onChange(filepath, opts).catch(errorHandler))
-
   watcher.on('unlink', filepath => onUnlink(filepath, opts).catch(errorHandler))
-
   watcher.on('unlinkDir', dirpath =>
     onUnlinkDir(path.resolve(dirpath), opts).catch(errorHandler)
   )
-
   return watcher
 }
 
@@ -333,84 +346,81 @@ const findKey = (map, longerPath) =>
     .sort((p, c) => (p.length > c.length ? -1 : p.length < c.length ? 1 : 0))[0]
     .join(path.sep)
 
-const onAdd = (() => {
-  var _ref = asyncToGenerator(function*(filepath, { f2t, map, verbose }) {
-    var _f2t = f2t(filepath),
-      _f2t2 = slicedToArray(_f2t, 2)
+const onAdd =
+  /*#__PURE__*/
+  (function() {
+    var _ref = _asyncToGenerator(function*(filepath, { f2t, map, verbose }) {
+      const _f2t = f2t(filepath),
+        _f2t2 = _slicedToArray(_f2t, 2),
+        dirpath = _f2t2[0],
+        egg = _f2t2[1]
 
-    const dirpath = _f2t2[0],
-      egg = _f2t2[1]
-
-    const eggs = map.get(dirpath)
-    eggs.push(egg)
-
-    yield zap(egg)
-    return (
-      verbose &&
-      console.log(
-        chalk.green('[added]') +
-          ' ' +
-          chalk.gray(filepath + ' => ' + egg.outpath)
-      )
-    )
-  })
-
-  return function onAdd(_x, _x2) {
-    return _ref.apply(this, arguments)
-  }
-})()
-
-const onChange = (() => {
-  var _ref2 = asyncToGenerator(function*(filepath, { map, verbose }) {
-    const eggs = map.get(findKey(map, filepath))
-    const egg = eggs.find(function(egg) {
-      return egg.filepath === filepath
-    })
-
-    return (
-      egg &&
-      zap(egg).then(function() {
-        return (
-          verbose &&
-          console.log(
-            chalk.yellow('[changed]') +
-              ' ' +
-              chalk.gray(filepath + ' => ' + egg.outpath)
-          )
+      const eggs = map.get(dirpath)
+      eggs.push(egg)
+      yield zap(egg)
+      return (
+        verbose &&
+        console.log(
+          chalk.green('[added]') +
+            ' ' +
+            chalk.gray(filepath + ' => ' + egg.outpath)
         )
-      })
-    )
-  })
-
-  return function onChange(_x3, _x4) {
-    return _ref2.apply(this, arguments)
-  }
-})()
-
-const onUnlink = (() => {
-  var _ref3 = asyncToGenerator(function*(filepath, { map, verbose }) {
-    const eggs = map.get(findKey(map, filepath))
-    const spliceIndex = eggs.findIndex(function(egg) {
-      return egg.filepath === filepath
+      )
     })
 
-    if (spliceIndex === -1) return
+    return function onAdd(_x, _x2) {
+      return _ref.apply(this, arguments)
+    }
+  })()
 
-    const outpath = eggs.splice(spliceIndex, 1)[0].outpath
-
-    yield fsExtra.remove(path.resolve(outpath))
-    return (
-      verbose &&
-      console.log(
-        chalk.red('[unlinked]') + ' ' + chalk.gray(filepath + ' => ' + outpath)
+const onChange =
+  /*#__PURE__*/
+  (function() {
+    var _ref2 = _asyncToGenerator(function*(filepath, { map, verbose }) {
+      const eggs = map.get(findKey(map, filepath))
+      const egg = eggs.find(egg => egg.filepath === filepath)
+      return (
+        egg &&
+        zap(egg).then(
+          () =>
+            verbose &&
+            console.log(
+              chalk.yellow('[changed]') +
+                ' ' +
+                chalk.gray(filepath + ' => ' + egg.outpath)
+            )
+        )
       )
-    )
-  })
+    })
 
-  return function onUnlink(_x5, _x6) {
-    return _ref3.apply(this, arguments)
-  }
-})()
+    return function onChange(_x3, _x4) {
+      return _ref2.apply(this, arguments)
+    }
+  })()
+
+const onUnlink =
+  /*#__PURE__*/
+  (function() {
+    var _ref3 = _asyncToGenerator(function*(filepath, { map, verbose }) {
+      const eggs = map.get(findKey(map, filepath))
+      const spliceIndex = eggs.findIndex(egg => egg.filepath === filepath)
+      if (spliceIndex === -1) return
+      const outpath = eggs.splice(spliceIndex, 1)[0].outpath
+      yield fsExtra.remove(path.resolve(outpath))
+      return (
+        verbose &&
+        console.log(
+          chalk.red('[unlinked]') +
+            ' ' +
+            chalk.gray(filepath + ' => ' + outpath)
+        )
+      )
+    })
+
+    return function onUnlink(_x5, _x6) {
+      return _ref3.apply(this, arguments)
+    }
+  })()
 
 const onUnlinkDir = (dirpath, { map, put, out, verbose }) =>
   Promise.all(
@@ -460,8 +470,6 @@ const recursiveRemoveEgg = (eggs, dirpath, spliced = []) => {
       )
 }
 
-//
-
 const BASE_COLOR = 'cyan'
 const PRE_SUCC = chalk.green(figures.tick)
 const PRE_FAIL = chalk.red(figures.cross)
@@ -476,62 +484,62 @@ const init = (config = {}) => {
   return config
 }
 
-const chin = (() => {
-  var _ref = asyncToGenerator(function*(config) {
-    var _init = init(config)
+const chin =
+  /*#__PURE__*/
+  (function() {
+    var _ref = _asyncToGenerator(function*(config) {
+      const _init = init(config),
+        put = _init.put,
+        out = _init.out,
+        ignored = _init.ignored,
+        processors = _init.processors,
+        verbose = _init.verbose
 
-    const put = _init.put,
-      out = _init.out,
-      ignored = _init.ignored,
-      processors = _init.processors,
-      verbose = _init.verbose
+      const _ref2 = yield prepare(put, out, processors, ignored),
+        map = _ref2.map
 
-    var _ref2 = yield prepare(put, out, processors, ignored)
-
-    const map = _ref2.map
-
-    yield zapAll(map, verbose)
-    return
-  })
-
-  return function chin(_x) {
-    return _ref.apply(this, arguments)
-  }
-})()
-
-const watch = (() => {
-  var _ref3 = asyncToGenerator(function*(config) {
-    var _init2 = init(config)
-
-    const put = _init2.put,
-      out = _init2.out,
-      ignored = _init2.ignored,
-      processors = _init2.processors,
-      verbose = _init2.verbose,
-      watchOpts = _init2.watch
-
-    var _ref4 = yield prepare(put, out, processors, ignored)
-
-    const map = _ref4.map,
-      f2t = _ref4.f2t
-
-    yield zapAll(map, verbose)
-    const watcher = watchprocess({
-      map,
-      f2t,
-      put,
-      out,
-      watchOpts,
-      ignored,
-      verbose
+      yield zapAll(map, verbose)
+      return
     })
-    return watcher
-  })
 
-  return function watch(_x2) {
-    return _ref3.apply(this, arguments)
-  }
-})()
+    return function chin(_x) {
+      return _ref.apply(this, arguments)
+    }
+  })()
+
+const watch =
+  /*#__PURE__*/
+  (function() {
+    var _ref3 = _asyncToGenerator(function*(config) {
+      const _init2 = init(config),
+        put = _init2.put,
+        out = _init2.out,
+        ignored = _init2.ignored,
+        processors = _init2.processors,
+        verbose = _init2.verbose,
+        watchOpts = _init2.watch
+
+      const _ref4 = yield prepare(put, out, processors, ignored),
+        map = _ref4.map,
+        f2t = _ref4.f2t
+
+      yield zapAll(map, verbose)
+      const watcher = watchprocess({
+        map,
+        f2t,
+        put,
+        out,
+        watchOpts,
+        ignored,
+        verbose
+      })
+      return watcher
+    })
+
+    return function watch(_x2) {
+      return _ref3.apply(this, arguments)
+    }
+  })()
 
 const zapAll = (map, verbose) =>
   !verbose ? zapAllQuiet(map) : zapAllVerbose(map)
@@ -543,50 +551,48 @@ const zapAllVerbose = map =>
     console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`))
   )
 
-const recursiveZapDir = (() => {
-  var _ref5 = asyncToGenerator(function*(isOneDir, entries, count = 0) {
-    var _entries$splice$ = slicedToArray(entries.splice(0, 1)[0], 2)
+const recursiveZapDir =
+  /*#__PURE__*/
+  (function() {
+    var _ref5 = _asyncToGenerator(function*(isOneDir, entries, count = 0) {
+      const _entries$splice$ = _slicedToArray(entries.splice(0, 1)[0], 2),
+        dirpath = _entries$splice$[0],
+        eggs = _entries$splice$[1]
 
-    const dirpath = _entries$splice$[0],
-      eggs = _entries$splice$[1]
-
-    if (eggs.length) {
-      console.log(
-        (isOneDir ? `` : `${dirpath}: `) +
-          chalk[BASE_COLOR](`${eggs.length} files`)
-      )
-
-      let countByDir = 0
-      yield Promise.all(
-        eggs.map(function(egg) {
-          return zap(egg)
-            .then(function(msg) {
-              return console.log(
-                `${PRE_SUCC} ${chalk.gray(
-                  `${egg.filepath}${msg ? `: ${msg}` : ''}`
-                )}`
+      if (eggs.length) {
+        console.log(
+          (isOneDir ? `` : `${dirpath}: `) +
+            chalk[BASE_COLOR](`${eggs.length} files`)
+        )
+        let countByDir = 0
+        yield Promise.all(
+          eggs.map(egg =>
+            zap(egg)
+              .then(msg =>
+                console.log(
+                  `${PRE_SUCC} ${chalk.gray(
+                    `${egg.filepath}${msg ? `: ${msg}` : ''}`
+                  )}`
+                )
               )
-            })
-            .then(function() {
-              return countByDir++
-            })
-            .catch(function(err) {
-              return console.log(
-                `${PRE_FAIL} ${chalk.gray(`${egg.filepath}: ${err.message}`)}`
+              .then(() => countByDir++)
+              .catch(err =>
+                console.log(
+                  `${PRE_FAIL} ${chalk.gray(`${egg.filepath}: ${err.message}`)}`
+                )
               )
-            })
-        })
-      )
-      count += countByDir
+          )
+        )
+        count += countByDir
+      }
+
+      return entries.length ? recursiveZapDir(isOneDir, entries, count) : count
+    })
+
+    return function recursiveZapDir(_x3, _x4) {
+      return _ref5.apply(this, arguments)
     }
-
-    return entries.length ? recursiveZapDir(isOneDir, entries, count) : count
-  })
-
-  return function recursiveZapDir(_x3, _x4) {
-    return _ref5.apply(this, arguments)
-  }
-})()
+  })()
 
 exports.chin = chin
 exports.watch = watch

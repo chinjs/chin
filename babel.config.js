@@ -4,13 +4,14 @@ module.exports = {
   env: {
     TEST: {
       presets: [
-        '@babel/preset-env',
+        ['@babel/preset-env', {
+          targets: { node: targetVersion }
+        }],
         '@babel/preset-flow',
         'power-assert',
       ],
       plugins: [
-        'istanbul',
-        '@babel/plugin-transform-runtime',
+        'istanbul'
       ]
     },
     BUILD: {

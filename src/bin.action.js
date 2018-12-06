@@ -1,6 +1,5 @@
 import chalk from 'chalk'
 import figures from 'figures'
-import { require as rooquire } from 'app-root-path'
 import { remove } from 'fs-extra'
 import { normalize } from 'path'
 
@@ -15,6 +14,9 @@ const requireModules = (requireValue) =>
   requireValue
   .split(',')
   .forEach(moduleName => require(moduleName))
+
+const rooquire = (filePath) =>
+  require(path.join(process.cwd(), filePath))
 
 const getConfig = (configValue) => {
   let config
