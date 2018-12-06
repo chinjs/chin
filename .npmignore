@@ -1,9 +1,9 @@
 flow-typed/
 src/
-.babelrc
 .flowconfig
 .gitignore
 .travis.yml
+babel.config.js
 codecov.yml
 rogo.svg
 rollup.config.js
