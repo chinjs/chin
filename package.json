@@ -1,9 +1,12 @@
 {
   "name": "chin",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
+  "files": [
+    ".dist/"
+  ],
   "main": ".dist/index.js",
   "bin": ".dist/chin.js",
   "description": "Simple assets build tool",
