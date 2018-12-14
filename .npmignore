@@ -5,6 +5,7 @@ bin/
 src/
 test/
 .flowconfig
+index.js.flow
 .gitignore
 .travis.yml
 codecov.yml

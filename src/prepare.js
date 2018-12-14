@@ -6,8 +6,9 @@ import type {
   Processors,
   Ignored,
   EggObj,
-  F2TFn
-} from './types.js'
+} from '../index.js.flow'
+
+export type F2TFn = (filepath: Path) => [Path, EggObj]
 
 const CWD_PATHS = ['.', './'].map(normalize)
 const PUT_EXPRESSION = ['/', '.', './', '*']

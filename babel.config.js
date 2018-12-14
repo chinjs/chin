@@ -26,6 +26,21 @@ module.exports = {
       plugins: [
 
       ],
+    },
+    /*
+    FLOW_COMMENT: {
+      presets: [
+        ['@babel/preset-env', {
+          modules: false,
+          targets: { node: targetVersion },
+        }],
+      ],
+      plugins: [
+        '@babel/plugin-transform-arrow-functions',
+        '@babel/plugin-transform-parameters',
+        '@babel/plugin-transform-flow-comments',
+      ],
     }
+    */
   }
 }
