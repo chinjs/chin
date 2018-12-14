@@ -1,9 +1,6 @@
-import Flow from 'rollup-plugin-flow'
 import Babel from 'rollup-plugin-babel'
 import AutoExternal from 'rollup-plugin-auto-external'
 import Prettier from 'rollup-plugin-prettier'
-
-const shebang = '#!/usr/bin/env node'
 
 const babel = Babel({
   exclude: 'node_modules/**'
@@ -18,7 +15,7 @@ const prettier = Prettier({
   parser: 'babylon',
   tabWidth: 2,
   semi: false,
-  singleQuote: true
+  singleQuote: true,
 })
 
 export default [
@@ -26,28 +23,27 @@ export default [
     input: 'src/index.js',
     output: {
       format: 'cjs',
-      file: 'dist/index.js',
+      file: '.dist/index.js',
       exports: 'named'
     },
     plugins: [
-      Flow({ pretty: true }),
       babel,
       autoexternal,
-      prettier
+      prettier,
     ]
   },
   {
-    input: 'src/bin.index.js',
+    input: 'bin/index.js',
     external: ['..'],
     output: {
       format: 'cjs',
-      file: 'bin/chin.js',
-      banner: shebang
+      file: '.dist/chin.js',
+      banner: '#!/usr/bin/env node'
     },
     plugins: [
       babel,
       autoexternal,
-      prettier
+      prettier,
     ]
   }
 ]

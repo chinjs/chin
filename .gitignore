@@ -1,4 +1,6 @@
 .chin/
+.dist/
+flow-typed/
 
 # Logs
 logs

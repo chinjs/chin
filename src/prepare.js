@@ -1,13 +1,13 @@
 // @flow
 import recursiveReaddir from 'recursive-readdir'
 import { normalize, join, extname } from 'path'
-import {
-  type Path,
-  type Processors,
-  type Ignored,
-  type EggObj,
-  type F2TFn
-} from '../types.js'
+import type {
+  Path,
+  Processors,
+  Ignored,
+  EggObj,
+  F2TFn
+} from './types.js'
 
 const CWD_PATHS = ['.', './'].map(normalize)
 const PUT_EXPRESSION = ['/', '.', './', '*']

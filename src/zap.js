@@ -9,13 +9,13 @@ import {
   createReadStream,
   createWriteStream
 } from 'fs-extra'
-import {
-  type Path,
-  type ReadFileOpts,
-  type CreateReadStreamOpts,
-  type ProcessorFn,
-  type StreamProcessorFn
-} from '../types.js'
+import type {
+  Path,
+  ReadFileOpts,
+  CreateReadStreamOpts,
+  ProcessorFn,
+  StreamProcessorFn
+} from './types.js'
 
 const isString = (data) => typeof data === 'string'
 const isProcessResult = (data) => Buffer.isBuffer(data) || isString(data)
@@ -62,14 +62,17 @@ const parseExBase = (pathstring) => {
   return { root, dir, name, ext }
 }
 
-const bufferProcess = ({ filepath, options, processor, on, msg, outpath }) =>
-  readFile(filepath, options)
+const bufferProcess = ({ filepath, options, processor, on, msg, outpath }) => {
+  const readedFile: any = readFile(filepath, options)
+  ;(readedFile: Promise<string | Buffer>)
+  return readedFile
   .then(data => processor(data, { on, msg, out: parseExBase(outpath) }))
   .then(result => createArgs(result, outpath, isProcessResult))
   .then(args =>
     Array.isArray(args) &&
     Promise.all(args.map(arg => outputFile(...arg)))
   )
+}
 
 const streamProcess = ({ filepath, options, processor, on, msg, outpath }) =>
   new Promise((resolve, reject) => {

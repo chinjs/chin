@@ -2,7 +2,7 @@ import assert from 'assert'
 import mock from 'mock-fs'
 import { join, format } from 'path'
 import { Transform } from 'stream'
-import { chin, watch } from './src'
+import { chin, watch } from '../src'
 
 const { assign } = Object
 

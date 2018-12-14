@@ -1,6 +1,6 @@
 import program from 'commander'
 import { chin, watch } from '..'
-import action, { PUT, OUT, CONFIG1, CONFIG2 } from './bin.action.js'
+import action, { PUT, OUT, CONFIG1, CONFIG2 } from './action'
 
 program
   .option('-c, --config [path]', `[default: ${CONFIG1} || ${CONFIG2}]`)
