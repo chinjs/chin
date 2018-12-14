@@ -1,6 +1,7 @@
 [ignore]
 .*/node_modules/.*
 .*/.chin/.*
+.*/.dist/.*
 [include]
 
 [libs]
@@ -8,4 +9,3 @@
 [lints]
 
 [options]
-# module.ignore_non_literal_requires=true

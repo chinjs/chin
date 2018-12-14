@@ -4,14 +4,14 @@ import chalk from 'chalk'
 import { remove } from 'fs-extra'
 import { sep, join, resolve } from 'path'
 import zap from './zap.js'
-import {
-  type EggObj,
-  type F2TFn,
-  type Path,
-  type Ignored,
-  type ChokidarOpts,
-  type Watcher
-} from '../types.js'
+import type {
+  EggObj,
+  F2TFn,
+  Path,
+  Ignored,
+  ChokidarOpts,
+  Watcher,
+} from './types.js'
 
 export default ({ map, f2t, put, out, watchOpts, ignored, verbose }: {
   map: Map<Path, EggObj[]>,

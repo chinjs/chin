@@ -5,7 +5,7 @@
 [![Build Status](https://img.shields.io/travis/chinjs/chin.svg?longCache=true&style=flat-square)](https://travis-ci.org/chinjs/chin)
 [![Coverage Status](https://img.shields.io/codecov/c/github/chinjs/chin.svg?longCache=true&style=flat-square)](https://codecov.io/github/chinjs/chin)
 
-Simple build tool that matches and processes files by extension instead of regexp.
+Simple build tool matches and processes files by extension instead of regexp.
 
 ## Usage
 ```js

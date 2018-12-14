@@ -1,13 +1,15 @@
 const targetVersion = '6'
 
 module.exports = {
+  presets: [
+    '@babel/preset-flow',
+  ],
   env: {
     TEST: {
       presets: [
         ['@babel/preset-env', {
           targets: { node: targetVersion }
         }],
-        '@babel/preset-flow',
         'power-assert',
       ],
       plugins: [
@@ -19,9 +21,11 @@ module.exports = {
         ['@babel/preset-env', {
           modules: false,
           targets: { node: targetVersion },
-        }]
+        }],
       ],
-      plugins: []
+      plugins: [
+
+      ],
     }
   }
 }

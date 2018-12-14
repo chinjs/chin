@@ -6,36 +6,11 @@ import { normalize, join } from 'path'
 import prepare from './prepare.js'
 import zap from './zap.js'
 import watchprocess from './watch.js'
-import { type Config, type Watcher } from '../types.js'
+import type { Config, Watcher } from './types.js'
 
-const BASE_COLOR = 'cyan'
+const success = (msg) => chalk.cyan(msg)
 const PRE_SUCC = chalk.green(figures.tick)
 const PRE_FAIL = chalk.red(figures.cross)
-
-const init = (config = {}) => {
-  assert(config.put && typeof config.put === 'string', '')
-  assert(config.out && typeof config.out === 'string', '')
-  config.put = normalize(config.put)
-  config.out = normalize(config.out)
-  process.env.CHIN_PUT = config.put
-  process.env.CHIN_OUT = config.out
-  return config
-}
-
-const chin = async (config: Config): Promise<void> => {
-  const { put, out, ignored, processors, verbose } = init(config)
-  const { map } = await prepare(put, out, processors, ignored)
-  await zapAll(map, verbose)
-  return
-}
-
-const watch = async (config: Config): Promise<Watcher> => {
-  const { put, out, ignored, processors, verbose, watch: watchOpts } = init(config)
-  const { map, f2t } = await prepare(put, out, processors, ignored)
-  await zapAll(map, verbose)
-  const watcher = watchprocess({ map, f2t, put, out, watchOpts, ignored, verbose })
-  return watcher
-}
 
 const zapAll = (map, verbose) =>
   !verbose
@@ -54,7 +29,7 @@ const zapAllVerbose = (map) =>
     map.size === 1,
     [].concat([...map.entries()])
   ).then(count =>
-    console.log(chalk[BASE_COLOR](`${figures.pointer} ${count} files`))
+    console.log(success(`${figures.pointer} ${count} files`))
   )
 
 const recursiveZapDir = async (isOneDir, entries, count = 0) => {
@@ -62,7 +37,7 @@ const recursiveZapDir = async (isOneDir, entries, count = 0) => {
   const [ dirpath, eggs ] = entries.splice(0, 1)[0]
 
   if (eggs.length) {
-    console.log((isOneDir ? `` : `${dirpath}: `) + chalk[BASE_COLOR](`${eggs.length} files`))
+    console.log((isOneDir ? `` : `${dirpath}: `) + success(`${eggs.length} files`))
 
     let countByDir = 0
     await Promise.all(eggs.map(egg =>
@@ -77,5 +52,29 @@ const recursiveZapDir = async (isOneDir, entries, count = 0) => {
   return entries.length ? recursiveZapDir(isOneDir, entries, count) : count
 }
 
-export { chin, watch }
+const init = (config = {}) => {
+  assert(config.put && typeof config.put === 'string', '')
+  assert(config.out && typeof config.out === 'string', '')
+  config.put = normalize(config.put)
+  config.out = normalize(config.out)
+  process.env.CHIN_PUT = config.put
+  process.env.CHIN_OUT = config.out
+  return config
+}
+
+export const chin = async (config: Config): Promise<void> => {
+  const { put, out, ignored, processors, verbose } = init(config)
+  const { map } = await prepare(put, out, processors, ignored)
+  await zapAll(map, verbose)
+  return
+}
+
+export const watch = async (config: Config): Promise<Watcher> => {
+  const { put, out, ignored, processors, verbose, watch: watchOpts } = init(config)
+  const { map, f2t } = await prepare(put, out, processors, ignored)
+  await zapAll(map, verbose)
+  const watcher = watchprocess({ map, f2t, put, out, watchOpts, ignored, verbose })
+  return watcher
+}
+
 export default chin
