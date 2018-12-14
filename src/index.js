@@ -3,10 +3,10 @@ import assert from 'assert'
 import figures from 'figures'
 import chalk from 'chalk'
 import { normalize, join } from 'path'
-import prepare from './prepare.js'
-import zap from './zap.js'
-import watchprocess from './watch.js'
-import type { Config, Watcher } from './types.js'
+import prepare from './prepare'
+import zap from './zap'
+import watchprocess from './watch'
+import type { Chin, ChinWatch } from '../index.js.flow'
 
 const success = (msg) => chalk.cyan(msg)
 const PRE_SUCC = chalk.green(figures.tick)
@@ -62,14 +62,14 @@ const init = (config = {}) => {
   return config
 }
 
-export const chin = async (config: Config): Promise<void> => {
+export const chin: Chin = async (config) => {
   const { put, out, ignored, processors, verbose } = init(config)
   const { map } = await prepare(put, out, processors, ignored)
   await zapAll(map, verbose)
   return
 }
 
-export const watch = async (config: Config): Promise<Watcher> => {
+export const watch: ChinWatch = async (config) => {
   const { put, out, ignored, processors, verbose, watch: watchOpts } = init(config)
   const { map, f2t } = await prepare(put, out, processors, ignored)
   await zapAll(map, verbose)

@@ -2,9 +2,31 @@
 export type Path = string
 export type Matcher = string
 export type Extension = string
-
+export type Watcher = any
 export type Ignored = Matcher[]
 export type ChokidarOpts = { [name: string]: any }
+
+export type Chin = (config: Config) => Promise<void>
+
+export type ChinWatch = (config: Config) => Promise<Watcher>
+
+export type Config = {
+  put: Path,
+  out: Path,
+  clean?: boolean,
+  verbose?: boolean,
+  ignored?: Ignored,
+  watch?: ChokidarOpts,
+  processors?: Processors | [Path, Processors][],
+}
+
+export type Processors = {
+  [Extension]: {
+    isStream?: boolean,
+    options?: ReadFileOpts | CreateReadStreamOpts,
+    processor?: ProcessorFn | StreamProcessorFn,
+  }
+}
 
 export type ReadFileOpts = {
   encoding?: string | null,
@@ -22,8 +44,14 @@ export type CreateReadStreamOpts = {
   highWaterMark?: number,
 }
 
-export type EventName = 'finish'
-export type OnFn = (event: EventName, callback: Function) => events$EventEmitter
+export type EventName =
+'finish'
+
+export type OnFn = (
+  event: EventName,
+  callback: Function,
+) => events$EventEmitter
+
 export type Out = {
   root: string,
   dir: string,
@@ -37,30 +65,18 @@ export type Util = {
 
 export type FileData = Buffer | string
 export type ProcessorResult = FileData | [Path, FileData] | [Path, FileData][]
-export type ProcessorFn = (data: FileData, util: Util) => ProcessorResult | Promise<ProcessorResult>
+export type ProcessorFn = (
+  data: FileData,
+  util: Util,
+) => ProcessorResult | Promise<ProcessorResult>
 
 export type PipeData = stream$Duplex | stream$Writable
 export type PipeFn = (dest: PipeData) => PipeData
 export type StreamProcessorResult = PipeData | [Path, PipeData] | [Path, PipeData][]
-export type StreamProcessorFn = (pipe: PipeFn, util: Util) => StreamProcessorResult | Promise<StreamProcessorResult>
-
-export type Processors = {
-  [Extension]: {
-    isStream?: boolean,
-    options?: ReadFileOpts | CreateReadStreamOpts,
-    processor?: ProcessorFn | StreamProcessorFn,
-  }
-}
-
-export type Config = {
-  put: Path,
-  out: Path,
-  clean?: boolean,
-  verbose?: boolean,
-  ignored?: Ignored,
-  watch?: ChokidarOpts,
-  processors?: Processors | [Path, Processors][],
-}
+export type StreamProcessorFn = (
+  pipe: PipeFn,
+  util: Util,
+) => StreamProcessorResult | Promise<StreamProcessorResult>
 
 export type EggObj = {
   filepath: Path,
@@ -70,6 +86,14 @@ export type EggObj = {
   processor?: ProcessorFn | StreamProcessorFn,
 }
 
-export type F2TFn = (filepath: Path) => [Path, EggObj]
+declare module 'chin' {
+  declare export default Chin
+  declare export type chin = Chin
+  declare export type watch = ChinWatch
+}
 
-export type Watcher = any
+declare module.exports: {
+  default: Chin,
+  chin: Chin,
+  watch: ChinWatch,
+}

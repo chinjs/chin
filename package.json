@@ -1,6 +1,6 @@
 {
   "name": "chin",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "repository": "chinjs/chin",
   "author": "kthjm <toxictoxer@gmail.com>",
   "license": "MIT",
@@ -26,7 +26,8 @@
     "type": "flow",
     "test": "cross-env BABEL_ENV=TEST nyc mocha",
     "coverage": "nyc report --reporter=lcov && codecov",
-    "build": "cross-env BABEL_ENV=BUILD rollup -c"
+    "build": "cross-env BABEL_ENV=BUILD rollup -c",
+    "postbuild": "cpy index.js.flow .dist"
   },
   "dependencies": {
     "chalk": "^2.4.1",
@@ -44,6 +45,7 @@
     "babel-plugin-istanbul": "^5.1.0",
     "babel-preset-power-assert": "^3.0.0",
     "codecov": "^3.1.0",
+    "cpy-cli": "^2.0.0",
     "cross-env": "^5.2.0",
     "flow-bin": "^0.87.0",
     "flow-typed": "^2.5.1",

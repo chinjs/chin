@@ -3,15 +3,15 @@ import chokidar from 'chokidar'
 import chalk from 'chalk'
 import { remove } from 'fs-extra'
 import { sep, join, resolve } from 'path'
-import zap from './zap.js'
+import zap from './zap'
+import type { F2TFn } from './prepare'
 import type {
   EggObj,
-  F2TFn,
   Path,
   Ignored,
   ChokidarOpts,
   Watcher,
-} from './types.js'
+} from '../index.js.flow'
 
 export default ({ map, f2t, put, out, watchOpts, ignored, verbose }: {
   map: Map<Path, EggObj[]>,

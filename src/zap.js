@@ -15,7 +15,7 @@ import type {
   CreateReadStreamOpts,
   ProcessorFn,
   StreamProcessorFn
-} from './types.js'
+} from '../index.js.flow'
 
 const isString = (data) => typeof data === 'string'
 const isProcessResult = (data) => Buffer.isBuffer(data) || isString(data)
